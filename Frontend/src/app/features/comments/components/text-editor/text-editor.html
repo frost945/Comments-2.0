@@ -1,0 +1,27 @@
+    <div class="block-tags" role="toolbar" aria-label="Formatting toolbar">
+
+        @for (btn of toolbarButtons; track btn.tag)
+        {
+            <button
+                type="button"
+                class="btn"
+                (click)="wrapTag(btn.tag)"
+                [title]="btn.title">
+                <span class="btn-text">{{btn.tag}}</span>
+            </button>
+        }
+
+        <button
+            type="button"
+            class="btn"
+            (click)="insertLink()"
+            title="Ссылка">
+            <span class="btn-text">[a]</span>
+        </button>
+
+    </div>
+
+    <textarea #commentText rows="4" placeholder="Ваш комментарий..." [formControl]="control"></textarea>
+
+    <div class="preview" aria-live="polite" [innerHTML]="preview()" [class.empty]="!preview()"></div>
+

@@ -1,0 +1,128 @@
+/* modal window for create comment/reply*/
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--modal-overlay);
+}
+
+.modal-content {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--modal-bg);
+    color : var(--text-primary);
+    box-shadow: var(--modal-shadow);
+    margin: 7% auto;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    max-width: 450px;
+    max-height: 90vh;
+    position: relative;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-title {
+    margin: 0 0 20px 0;
+    color: var(--text-primary);
+    font-size: 24px;
+    text-align: center;
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 24px;
+    color: var(--close-color);
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+    .close:hover {
+        color: var(--close-hover);
+    }
+
+.comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.comment-form input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--input-border);
+    background: var(--input-bg);
+    color: var(--text-primary);
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+    .comment-form input:focus{
+        outline: none;
+        border-color: var(--input-focus);
+    }
+    .comment-form input::placeholder {
+        color: var(--text-secondary);
+    }
+
+
+.file-input {
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--submit-bg);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 10px;
+}
+
+    .submit-btn:hover {
+        background: var(--submit-hover);
+    }
+
+.comment-form input.ng-valid.ng-touched { border-color: var(--valid-color); }
+.comment-form input.ng-invalid.ng-touched { border-color: var(--error-color); }
+
+.error-message {
+    font-size: 12px;
+    color: var(--error-color);
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        width: 70%;
+    }
+
+    .modal-title {
+        font-size: 18px;
+    }
+}

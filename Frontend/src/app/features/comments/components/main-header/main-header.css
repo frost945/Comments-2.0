@@ -1,0 +1,40 @@
+.panel-control {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    max-width: 800px;
+    width: 100%;
+
+    margin-left: 10px;
+    margin-right: 10px;
+    gap: 10px;
+}
+
+/*дубль класса в replies-header.css */
+.btn-open-modal {
+    justify-self: end;
+    background: transparent;
+    color: var(--btn-modal-text);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: background 0.3s ease;
+}
+    .btn-open-modal:hover {
+        background: var(--modal-btn-hover);
+    }
+
+@media (max-width: 480px) {
+    .panel-control {
+        flex-direction: column;
+        gap: 1px;
+    }
+
+    .btn-open-modal {
+        width: 40%;
+        margin-bottom: 5px;
+        padding: 5px;
+        font-size: 13px;   
+    }
+}

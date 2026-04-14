@@ -1,0 +1,16 @@
+<div class="header">
+    <div class="panel-control">
+
+        <app-sorting></app-sorting>
+
+        <button class="btn btn-open-modal" (click)="openModal()">
+            опубликовать
+        </button>
+
+    </div>
+</div>
+
+<app-comment-form-modal
+  [isOpen]="isModalOpen()"
+  (close)="isModalOpen.set(false)"
+/>

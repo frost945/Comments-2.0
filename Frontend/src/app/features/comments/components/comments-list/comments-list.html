@@ -1,0 +1,8 @@
+
+<div class="comments-container">
+  @for (comment of state.comments(); track comment.id) {
+    <app-comment-card
+      [comment]="comment">
+    </app-comment-card>
+  }
+</div>

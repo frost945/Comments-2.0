@@ -1,0 +1,14 @@
+
+<div class="comments-container">
+
+  @for (comment of state.replies(); track comment.id) {
+    <app-comment-card
+      [comment]="comment"
+      [showReplyButton]="false">
+    </app-comment-card>
+  }
+
+   <!-- trigger infinite scroll -->
+  <div #scrollTrigger class="scroll-trigger"></div>
+
+</div>

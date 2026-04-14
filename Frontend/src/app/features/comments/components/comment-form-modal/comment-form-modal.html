@@ -1,0 +1,67 @@
+<!-- Modal window for creating new comment/reply -->
+ @if(isOpen()){
+    <div class="modal hidden">
+        <div class="modal-content">
+
+            <span class="close" (click)="closeModal()">&times;</span>
+
+            <h2 class="modal-title">создать комментарий</h2>
+
+            <form [formGroup]="form" (ngSubmit)="submit()" class="comment-form">
+
+                <!-- User name input with validation messages -->
+                <input type="text" placeholder="Ваше имя" formControlName="userName">
+
+                @if(userName.touched && userName.invalid){
+                    <div class="error-message">
+                        @if(userName.errors?.['required']) {Имя обязательно}
+                        @else if(userName.errors?.['minlength']) {Минимум 3 символа}
+                        @else if(userName.errors?.['maxlength']){Максимум 20 символов}
+                        @else if(userName.errors?.['pattern']) {Имя не должно содержать пробелов}
+                    </div>   
+                }
+                       
+                <!-- Email input with validation messages -->
+                <input type="email" placeholder="email" formControlName="email">
+
+                @if(email.touched && email.invalid)
+                {<div class="error-message">Введите корректный email</div>}
+                
+                <!-- Text editor component with validation messages -->
+                <app-text-editor [control]="form.controls.text"></app-text-editor>
+
+                @if(form.controls.text.touched && form.controls.text.invalid){
+                    <div class="error-message">
+
+                        @if(form.controls.text.errors?.['required']) {Текст комментария обязателен}
+                        @else if(form.controls.text.errors?.['maxlength']){Максимальная длина комментария 2000 символов}
+                        @else if(form.controls.text.errors?.['unsafeHtml']){Найден запрещённый HTML}
+
+                    </div>
+                }
+
+                <!-- File/image input with validation messages -->
+                <input type="file" accept=".jpg,.jpeg,.png,.gif,.txt" class="file-input"
+                 (change)="onFileChange($event)">
+
+                @if(f.touched && f.errors){
+
+                    <div class="error-message">
+
+                        @if(f.errors['fileType']){Недопустимый тип файла}
+                        @else if(f.errors['imageSize']){Размер изображения не должен превышать 5MB}
+                        @else if(f.errors['textSize']){Размер txt файла не должен превышать 100KB}
+
+                    </div>
+                }
+
+                <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
+                    @if(isSubmitting())
+                        {Отправка...}
+                    @else
+                        {Отправить}
+                </button>
+            </form>
+        </div>
+    </div>
+}

@@ -1,0 +1,19 @@
+<div class="panel-sorting">
+
+    <button class="btn" [class.active]="state.activeSort('CreatedAt')" (click)="state.setSort('CreatedAt')">
+        <span class="btn-text">Дата</span>
+    </button> 
+
+    <button class="btn" [class.active]="state.activeSort('UserName')" (click)="state.setSort('UserName')">
+        <span class="btn-text">Имя</span>
+    </button>
+
+    <button class="btn" [class.active]="state.activeSort('Email')" (click)="state.setSort('Email')">
+        <span class="btn-text">Email</span>
+    </button>
+
+    <button class="btn" (click)="state.toggleDir()">
+        <span class="btn-text">{{ state.sortDir() ? '↑' : '↓' }}</span>
+    </button>
+    
+</div>

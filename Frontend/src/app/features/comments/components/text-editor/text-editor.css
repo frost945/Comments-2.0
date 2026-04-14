@@ -1,0 +1,58 @@
+.block-tags  {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    flex:1;
+}
+
+textarea {
+    width: 100%;
+    padding: 12px;
+    margin-top: 12px;
+    border: 1px solid var(--input-border);
+    background: var(--input-bg);
+    color: var(--text-primary);
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+    font-family: inherit;
+    resize: none;
+}
+    textarea:focus-visible {
+        outline: none;
+        border-color: var(--input-focus);
+    }
+
+    textarea::placeholder {
+        color: var(--text-secondary);
+    }
+
+
+.preview {
+    padding: 12px;
+    background: var(--input-bg);
+    border-radius: 8px;
+    border: 1px solid var(--input-border);
+    color: var(--text-primary);
+    height: 60px;
+    font-size: 14px;
+    overflow-y: auto;
+}
+
+.preview.empty::before {
+  content: "Предпросмотр...";
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+@media (max-width: 480px) {
+    textarea, .preview {
+        font-size: 13px;
+    }
+
+    .btn {
+        padding: 6px 10px;
+    }
+}

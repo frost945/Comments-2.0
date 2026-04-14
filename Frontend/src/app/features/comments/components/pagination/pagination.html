@@ -1,0 +1,17 @@
+<div class="footer">
+  <div class="pagination">  
+    <button class="btn"
+            (click)="onPrevPage()"
+            [disabled]="!state.hasPrevPage()">
+      <span class="btn-text">Назад</span>
+    </button>
+
+    <span class="page-counter"> {{ displayPageNumber() }}</span>
+
+    <button class="btn"
+            (click)="onNextPage()"
+            [disabled]="!state.hasNextPage()">
+      <span class="btn-text">Вперед</span>
+    </button>
+  </div>
+</div>

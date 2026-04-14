@@ -1,0 +1,142 @@
+.comment-card {
+    background-color: var(--card-bg);
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.comment-header {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap; 
+    border-bottom: 1px solid var(--card-header-border);
+    padding-bottom: 10px;
+    gap: 15px;
+}
+
+.comment-username {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 16px;
+}
+
+.comment-date {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.comment-text {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-primary);
+    padding-top: 4px;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+/*display image*/
+.comment-image {
+    align-self: flex-start;
+
+    max-width: 320px;
+    max-height: 240px;
+    height: auto;
+
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/*clickable zone is only on image*/
+.image-link {
+  line-height: 0;
+  width: fit-content;
+}
+
+/*display txtfile*/
+.text-file-link {
+    align-items: center;
+    width:100%;
+    background-color: transparent;
+    color: var(--link-color);
+    text-decoration: none;
+    padding: 5px 10px;
+    border: 1px solid var(--link-color);
+    border-radius: 4px;
+    max-width: 150px;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.replies-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-width: 70px;
+    height: 26px;
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.replies-content {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px;
+    border-radius: 12px;
+    color: var(--card-btn-replies-text);
+}
+/*backlight works on both themes*/
+    .replies-content::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+    .replies-btn:hover .replies-content::before {
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+.replies-btn svg {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+}
+
+    @media (max-width: 480px) {
+    .comment-card {
+        padding: 12px;
+    }
+
+    .comment-username {
+        font-size: 14px;
+    }
+
+    .comment-text {
+        font-size: 13px;
+    }
+
+    .comment-image {
+        width: 100%;
+        object-fit: contain;
+    }
+
+    .text-file-link {
+        width: 50%;
+    }
+}

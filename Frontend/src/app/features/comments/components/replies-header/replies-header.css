@@ -1,0 +1,57 @@
+.replies-title {
+    justify-self: center;
+    font-weight: 600;
+    color: var(--btn-modal-text);
+    padding: 15px;
+}
+
+.close-replies {
+    justify-self: start;
+    background: none;
+    border: none;
+    stroke: #dee2e6;
+    cursor: pointer;
+    transition: stroke 0.3s ease;
+}
+.close-replies svg {
+    display: block;
+    padding-top: 15px;
+}
+
+    .close-replies:hover svg path {
+        stroke: #fff;
+    }
+
+/*дубль класса в main-header.css */
+.btn-open-modal {
+    justify-self: end;
+    background: transparent;
+    color: var(--btn-modal-text);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: background 0.3s ease;
+}
+    .btn-open-modal:hover {
+        background: var(--modal-btn-hover);
+    }
+    
+.panel-control-replies {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    max-width: 800px;
+    width: 100%;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+@media (max-width: 480px) {
+    .replies-title{
+       font-size: 14px;
+    }
+
+    .btn-open-modal {
+        font-size: 13px;   
+    }
+}

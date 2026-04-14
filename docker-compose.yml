@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  comments-db:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      - SA_PASSWORD=StrongPass123!
+      - ACCEPT_EULA=Y
+    ports:
+      - "1433:1433"
+    volumes:
+      - commentsdb_data:/var/opt/mssql 
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/1433"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  comments-app:
+    build:
+      context: ./Backend
+      dockerfile: src/Dockerfile
+    volumes:
+        - uploads_data:/app/uploads
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=http://+:5000
+    ports:
+      - "5000:5000"
+    depends_on:
+      comments-db:
+        condition: service_healthy
+
+  comments-frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    # to serve files directly through nginx, bypassing the backend
+    volumes:
+    - uploads_data:/usr/share/nginx/uploads:ro
+    ports:
+      - "4200:80"
+    depends_on:
+      - comments-app
+
+volumes:
+  commentsdb_data:
+  uploads_data:

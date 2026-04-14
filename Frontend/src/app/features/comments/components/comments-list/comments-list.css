@@ -1,0 +1,11 @@
+.comments-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 800px;
+    min-width: auto;
+    margin: 50px auto 50px;
+    padding: 20px;
+    background-color: transparent;
+    border-radius: 10px;
+}

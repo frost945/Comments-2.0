@@ -1,0 +1,12 @@
+{
+  "/uploads": {
+    "target": "https://localhost:7107",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/api": {
+    "target": "https://localhost:7107",
+    "secure": false,
+    "changeOrigin": true
+  }
+}
