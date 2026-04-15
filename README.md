@@ -1,39 +1,58 @@
-# SPA Comments
-A single-page application for posting comments with cascading replies. Built with a focus on secure input, an object-oriented approach, and easy data sorting.
+# Overview
+A full-stack comments system built with Angular and ASP.NET Core.
+Supports nested replies, file uploads, and secure HTML rendering.
 
 ## Features
-- Posting comments and replies to comments (unlimited nesting)
+- Posting comments and replies to comments
 - Saving comments and user data in a relational database
-- Tabular output of root comments sorted by: userName, email, date added (in both directions)
+- Tabular output of root comments sorted by: username, email, createdAt (in both directions)
 - Default sorting - LIFO
 - Pagination - 25 posts per page
+- For replies page - infinite scrolling
 - The ability to add a picture or text file
 - Viewing images is enhanced with visual effects using GLightbox
 - Validation of input data on the server and client side
-- The user may use the following permitted HTML tags in messages: `<a href=”” title=””> </a> <code> </code> <i> </i> <strong> </strong>`
+- The user may use the following permitted HTML tags in messages: `<a href="" title=""> </a> <code> </code> <i> </i> <strong> </strong>`
 - Check for closing tags, code is valid XHTML.
 - Global error handling and logging
 - Swagger documentation
 
 ## Technologies
 
+### Backend
 - .NET 9
 - ASP.NET Core Web API: for building RESTful services
 - Entity Framework Core: ORM for database operations
-- MS SQL Server: open-source relational database
+- MS SQL Server: relational database
 - Ganss.XSS: server-side HtmlSanitizer
-- DOMPurify: client-side HtmlSanitizer
-- JavaScript: for frontend
 - Swagger: for API documentation
+
+### Frontend
+- Angular 21
+- TypeScript, HTMl, CSS
+- DOMPurify: client-side HtmlSanitizer
+
+## Architecture
+- Clean Architecture (Backend)
+- Layer separation: API - Application - Domain - Infrastructure
+- REST API communication
+- SPA frontend (Angular)
 
 ## Project Structure
 
-- Comments.Api: Web API controllers and middleware
-- Comments.Application: business logic, application services, validation, sanitization, interfaces
-- Comments.Model: entities, value objects, enums, filters
-- Comments.Infrastructure: data access, EF Core DbContext, entity configurations and migrations
-- Comments.Contracts: API contracts, DTOs, request and response models used for communication between the Web API and external clients
-- Comments.wwwroot — SPA UI
+### Backend
+/Backend/src/
+- Api/ Web API controllers and middleware
+- Application/ business logic, application services, validation, sanitization, interfaces
+- Model/ entities, value objects, enums, filters
+- Infrastructure/ data access, EF Core DbContext, entity configurations and migrations
+- Contracts/ API contracts, DTOs, request and response models used for communication between the Web API and external clients
+
+### Frontend
+/Frontend/src/
+- app/ components and app logic
+- environments/ environment configurations
+- types/ global declarations
 
 ## Requirements
 - .NET 9 SDK
@@ -44,40 +63,45 @@ A single-page application for posting comments with cascading replies. Built wit
 ## Setup Instructions
 
 ### Local Development
+#### Backend
 1. Clone the repository: https://github.com/frost945/Project_Comments
 2. Set up a local MS SQL instance or use Docker
-3. Update connection string in appsettings.json, if needed
-4. Run migrations to create the database schema:
+3. Run app:
 ```bash
-cd src
-```
-5. Run the application:
-```bash
+cd Backend/src
 dotnet run
 ```
-6. Access the Swagger UI at https://localhost:7107/swagger
+4. Access Backend API: https://localhost:7107
+   Access Swagger UI: https://localhost:7107/swagger
+
+Frontend
+1. Install dependencies:
+```bash npm install```
+2. Run app:
+```bash ng serve```
+3. Access Frontend app: http://localhost:4200
 
 ### Using Docker Compose
 1. Clone the repository
-2. Update connection string in appsettings.json, if needed
-3. Run the application with Docker Compose:
+2. Run the application with Docker Compose:
 ```bash
 docker-compose up -d
 ```
-4. Access the Swagger UI at https://localhost:7107/swagger
-
-Access to the app Frontend: http://localhost:5000
+3. Access Backend API: http://localhost:5000
+   Access Swagger UI: http://localhost:5000/swagger
+   Access Frontend app: http://localhost:4200
 
 ## API Endpoints
-- `POST /Comment`: Create a new comment
-- `GET /Comment/parent`: Get all root comments
-- `GET /Comment/children/{parentId}`: Get all replies by id
-
+- `POST /api/comments`: Create a new comment
+- `GET /api/comments/parent`: Get all parent comments
+- `GET /api/comments/children/{parentId}`: Get all replies by id
+- `GET /api/comments?id={id}`: Get comment by id
+- `GET api/files/text/{id}`: Get text file by id
 
 ## Security Notes
-- XSS mitigation: HTML sanitizer, strict whitelist
-- SQL Injection mitigation: EF Core parameterized queries
-- server + client validation
+- Server-side and client-side validation
+- Input sanitization (DOMPurify + Ganss.XSS)
+- Strict HTML whitelist
 
 ## Future Enhancements
 - Implement authentication and authorization
