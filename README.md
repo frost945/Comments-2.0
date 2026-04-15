@@ -63,33 +63,37 @@ Supports nested replies, file uploads, and secure HTML rendering.
 ## Setup Instructions
 
 ### Local Development
-#### Backend
-1. Clone the repository: https://github.com/frost945/Project_Comments
+#### Backend:
+1. Clone the repository: https://github.com/frost945/Comments-2.0
 2. Set up a local MS SQL instance or use Docker
 3. Run app:
 ```bash
 cd Backend/src
 dotnet run
 ```
-4. Access Backend API: https://localhost:7107
-   Access Swagger UI: https://localhost:7107/swagger
+- Access Backend API: https://localhost:7107
+- Access Swagger UI: https://localhost:7107/swagger
 
-Frontend
+#### Frontend:
 1. Install dependencies:
-```bash npm install```
+```bash
+npm install
+```
 2. Run app:
-```bash ng serve```
-3. Access Frontend app: http://localhost:4200
+```bash
+ng serve
+```
+- Access Frontend app: http://localhost:4200
 
 ### Using Docker Compose
 1. Clone the repository
-2. Run the application with Docker Compose:
+2. Run app with Docker Compose:
 ```bash
 docker-compose up -d
 ```
-3. Access Backend API: http://localhost:5000
-   Access Swagger UI: http://localhost:5000/swagger
-   Access Frontend app: http://localhost:4200
+- Access Backend API: http://localhost:5000
+- Access Swagger UI: http://localhost:5000/swagger
+- Access Frontend app: http://localhost:4200
 
 ## API Endpoints
 - `POST /api/comments`: Create a new comment
