@@ -105,9 +105,10 @@ docker-compose up -d
 ## Proxying
 - For local development, API requests are proxied through Angular's dev server to avoid CORS issues.
   Configuration file: proxy.conf.json. When the frontend is launched, the proxy is enabled by default,
-  or explicitly using ```bash
-  ng serve --proxy-config proxy.conf.json
-  ```
+  or explicitly using
+```bash
+ng serve --proxy-config proxy.conf.json
+```
 - In Docker, proxying is handled by Nginx. Configuration file: default.conf.
   Nginx forwards API requests from the frontend to the backend service (e.g. /api → backend container).
   This is necessary to avoid CORS issues during development. It provides a single entry point into production
