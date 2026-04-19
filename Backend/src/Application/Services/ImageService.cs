@@ -139,10 +139,14 @@ namespace Comments.Application.Services
             if (imageId == null)
                 return null;
 
-            var previewFileName = GetPreviewFileName(imageId.Value);
+            var filePath = Path.Combine(
+                _environment.ContentRootPath,
+                "uploads", "images", "preview",
+                $"{imageId}_preview.webp");
 
-            return previewFileName != null
-                ? $"/uploads/images/preview/{previewFileName}"
+            // If a preview exists, return its URL; otherwise, return the original image URL
+            return (File.Exists(filePath))
+                ? $"/uploads/images/preview/{imageId}_preview.webp"
                 : GetImageOriginalUrl(imageId);
         }
 
@@ -164,39 +168,5 @@ namespace Comments.Application.Services
 
             return null;
         }
-
-        private string? GetPreviewFileName(Guid imageId)
-        {
-            foreach (var ext in _allowedExtensions)
-            {
-                var filePath = Path.Combine(
-                    _environment.ContentRootPath,
-                    "uploads", "images", "preview",
-                    $"{imageId}_preview{ext}");
-
-                if (File.Exists(filePath))
-                    return Path.GetFileName(filePath);
-            }
-
-            return null;
-        }
-
-       /* public (string path, string contentType)? GetImagePreviewFile(Guid imageId)
-        {
-            foreach (var ext in _allowedExtensions)
-            {
-                var path = Path.Combine(
-                    _environment.ContentRootPath,
-                    "uploads", "images", "preview",
-                    $"{imageId}_preview{ext}");
-
-                if (File.Exists(path))
-                {
-                    var contentType = ext.TrimStart('.'); // Remove the dot from the extension for correct MIME type
-                    return (path, contentType);
-                }
-            }
-            return null;
-        }*/
     }
 }

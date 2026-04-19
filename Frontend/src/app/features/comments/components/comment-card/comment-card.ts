@@ -19,7 +19,6 @@ export class CommentCard {
   private router = inject(Router);
   
   fileDownloadService = inject(FileDownloadService)
-  imagePreviewUrl = "uploads/images/preview/";
 
   sanitizedText = '';
 

@@ -4,9 +4,9 @@ export interface Comment {
   userName: string;
   createdAt: string;
   parentId?: number;
-  imageId?: string;
   textFileId: string;
   textFileName?: string;
+  imagePreviewUrl?: string;
   imageOriginalUrl?: string;
   replyCount: number;
 }

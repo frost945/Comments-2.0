@@ -33,14 +33,14 @@
     [innerHTML]="sanitizedText">
   </p>
 
-  @if (comment().imageId) {
+  @if (comment().imagePreviewUrl) {
     <a
       class="image-link"
       [href]="comment().imageOriginalUrl"
       appLightbox
     >
       <img
-        [src]="imagePreviewUrl+comment().imageId+'_preview.webp'"
+        [src]="comment().imagePreviewUrl"
         class="comment-image"
         loading="lazy"
       />

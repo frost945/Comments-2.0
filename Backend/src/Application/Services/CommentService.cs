@@ -96,9 +96,10 @@ namespace Comments.Application.Services
                  TextFileName = comment.OriginalTextFileName
              };*/
 
-            var ImageOriginalUrl = _imageService.GetImageOriginalUrl(comment.ImageId);
+            var imagePreviewUrl = _imageService.GetImagePreviewUrl(comment.ImageId);
+            var imageOriginalUrl = _imageService.GetImageOriginalUrl(comment.ImageId);
 
-            var commentResponse = CommentMapper.ToResponse(comment, ImageOriginalUrl);
+            var commentResponse = CommentMapper.ToResponse(comment, imagePreviewUrl, imageOriginalUrl);
 
             _logger.LogAuditUser(
                 "Created comment {CommentId}, UserName: {UserName}, HasFile: {HasFile}, ParentId: {ParentId}",
@@ -173,7 +174,7 @@ namespace Comments.Application.Services
              }).ToList();*/
 
             var commentsResponse = rawComments
-            .Select(c => CommentMapper.FromRaw(c, _imageService.GetImageOriginalUrl(c.ImageId)))
+            .Select(c => CommentMapper.FromRaw(c, _imageService.GetImagePreviewUrl(c.ImageId), _imageService.GetImageOriginalUrl(c.ImageId)))
             .ToList();
 
             return commentsResponse;
@@ -192,18 +193,17 @@ namespace Comments.Application.Services
                     ImageId = c.ImageId,
                     TextFileId = c.TextFileId,
                     OriginalTextFileName = c.OriginalTextFileName,
-                   // ReplyCount = _dbContext.Comments.Count(r => r.ParentId == c.Id)//пока что так, потом можно оптимизировать, чтобы не делать отдельного запроса на каждый комментарий
-                   ReplyCount = c.Children.Count // используем навигационное свойство для подсчета количества ответов, что позволяет избежать дополнительного запроса к базе данных для каждого комментария
+                   ReplyCount = c.Children.Count
                 })
                 .FirstOrDefaultAsync();
 
             if (rawComment == null)
                 throw new KeyNotFoundException($"Comment for id: {id} not found");
 
-
+            var imagePreviewUrl = _imageService.GetImagePreviewUrl(rawComment.ImageId);
             var ImageOriginalUrl = _imageService.GetImageOriginalUrl(rawComment.ImageId);
 
-            var commentResponse = CommentMapper.FromRaw(rawComment, ImageOriginalUrl);
+            var commentResponse = CommentMapper.FromRaw(rawComment, imagePreviewUrl, ImageOriginalUrl);
 
             return commentResponse;
         }
