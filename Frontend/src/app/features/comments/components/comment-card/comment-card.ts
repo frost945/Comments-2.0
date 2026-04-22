@@ -1,7 +1,7 @@
 import { Component, inject, input } from '@angular/core';
 import { Router } from '@angular/router';
 import { Comment } from '../../models/comment.model';
-import { sanitizeHtml } from '../../../../shared/utils/html-sanitizer.util';
+import { sanitizeHtml } from '../../../../shared/utils/html-security.util';
 import { GlightboxDirective } from '../../../../shared/directives/glightbox.directives';
 import { FileDownloadService } from '../../../../core/services/file-download.service';
 

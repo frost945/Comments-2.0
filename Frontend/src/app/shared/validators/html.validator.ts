@@ -1,5 +1,5 @@
 import { AbstractControl, ValidationErrors } from '@angular/forms';
-import { validateHtml } from '../utils/html-sanitizer.util';
+import { validateHtml } from '../utils/html-security.util';
 
 export function htmlValidator(control: AbstractControl): ValidationErrors | null {
 
