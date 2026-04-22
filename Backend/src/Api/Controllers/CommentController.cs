@@ -16,8 +16,9 @@ namespace Comments.Api.Controllers
             _commentService = commentService;
         }
 
+        // CREATE comment
         [HttpPost]
-        public async Task<IActionResult> AddCommentAsync([FromForm] CommentRequest commentRequest)
+        public async Task<IActionResult> CreateCommentAsync([FromForm] CommentRequest commentRequest)
         {
             if (!ModelState.IsValid)
             {
@@ -25,11 +26,18 @@ namespace Comments.Api.Controllers
             }
 
             var comment = await _commentService.CreateCommentAsync(commentRequest, commentRequest.File);
-            return Ok(comment);
+
+            // Return 201 Created with location header pointing to the new comment
+            return CreatedAtAction(nameof(GetCommentById), new { id = comment.Id }, comment);
         }
 
-        [HttpGet("parent")]
-        public async Task<IActionResult> GetAllParentComments(CommentSortField sortBy = CommentSortField.createdAt, bool ascending = true, int skip=0)
+        // GET root (parent) comments
+        // api/comments?sortBy=createdAt&ascending=true&skip=0
+        [HttpGet]
+        public async Task<IActionResult> GetComments(
+            [FromQuery] CommentSortField sortBy = CommentSortField.createdAt,
+            [FromQuery] bool ascending = true,
+            [FromQuery] int skip=0)
         {
             var query = new CommentQuery
             {
@@ -43,17 +51,21 @@ namespace Comments.Api.Controllers
             return Ok(parentComments);
         }
 
-        [HttpGet("children")]
-        public async Task<IActionResult> GetChildrenCommentsAsync(int parentId, int skip = 0)
+        // GET replies (children) of comment
+        // api/comments/{id}/replies?skip=0
+        [HttpGet("{id:int}/replies")]
+        public async Task<IActionResult> GetReplies(int id, [FromQuery] int skip = 0)
         {
             var query = new CommentQuery { Skip = skip };
 
-            var childrenComments = await _commentService.GetCommentsAsync(query, parentId);
+            var replies = await _commentService.GetCommentsAsync(query, parentId: id);
 
-            return Ok(childrenComments);
+            return Ok(replies);
         }
 
-        [HttpGet]
+        // GET single comment
+        // api/comments/{id}
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetCommentById(int id)
         {
             var comment = await _commentService.GetCommentById(id);
