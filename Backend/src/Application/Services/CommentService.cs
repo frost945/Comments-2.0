@@ -113,10 +113,6 @@ namespace Comments.Application.Services
 
         public async Task<List<CommentResponse>> GetCommentsAsync(CommentQuery commentQuery, int? parentId = null)
         {
-            if (commentQuery.PageSize is < 1 or > 25)
-                throw new ArgumentException("PageSize must be between 1 and 25");
-
-
             var comments = _dbContext.Comments.AsNoTracking()
                 .AsQueryable();
 

@@ -34,18 +34,8 @@ namespace Comments.Api.Controllers
         // GET root (parent) comments
         // api/comments?sortBy=createdAt&ascending=true&skip=0
         [HttpGet]
-        public async Task<IActionResult> GetComments(
-            [FromQuery] CommentSortField sortBy = CommentSortField.createdAt,
-            [FromQuery] bool ascending = true,
-            [FromQuery] int skip=0)
+        public async Task<IActionResult> GetComments([FromQuery] CommentQuery query)
         {
-            var query = new CommentQuery
-            {
-                Skip = skip,
-                SortBy = sortBy,
-                Ascending = ascending
-            };
-
             var parentComments = await _commentService.GetCommentsAsync(query);
 
             return Ok(parentComments);
