@@ -24,11 +24,11 @@ namespace Comments.Application.Services
             _logger = logger;
         }
 
-        public async Task<CommentResponse> CreateCommentAsync(CommentRequest request, IFormFile? file = null)
+        public async Task<CommentResponse> CreateCommentAsync(CommentRequest request, CancellationToken cancellationToken, IFormFile? file = null)
         {
             if (request.ParentId.HasValue)
             {
-                bool isParentId = await _dbContext.Comments.AnyAsync(c => c.Id == request.ParentId);
+                bool isParentId = await _dbContext.Comments.AnyAsync(c => c.Id == request.ParentId, cancellationToken);
                 if (!isParentId)
                 {
                     throw new KeyNotFoundException("Parent comment not found");
@@ -47,13 +47,13 @@ namespace Comments.Application.Services
                 {
                     case FileType.Image:
                         {
-                            imageId = await _imageService.ProcessAndSaveImageAsync(file);
+                            imageId = await _imageService.ProcessAndSaveImageAsync(file, cancellationToken);
                             break;
                         }
 
                     case FileType.Text:
                         {
-                            var (fileId, originalFileName) = await _textFileService.ProcessAndSaveTextFileAsync(file);
+                            var (fileId, originalFileName) = await _textFileService.ProcessAndSaveTextFileAsync(file, cancellationToken);
                             textFileId = fileId;
                             originalTextFileName = originalFileName;
                             break;
@@ -81,7 +81,7 @@ namespace Comments.Application.Services
 
 
             _dbContext.Add(comment);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
                
 
             /* var commentResponse = new CommentResponse
@@ -111,7 +111,7 @@ namespace Comments.Application.Services
             return commentResponse;
         }
 
-        public async Task<List<CommentResponse>> GetCommentsAsync(CommentQuery commentQuery, int? parentId = null)
+        public async Task<List<CommentResponse>> GetCommentsAsync(CommentQuery commentQuery, CancellationToken cancellationToken, int? parentId = null)
         {
             var comments = _dbContext.Comments.AsNoTracking()
                 .AsQueryable();
@@ -154,7 +154,7 @@ namespace Comments.Application.Services
                     ReplyCount = parentId==null ? c.Children.Count
                     : 0 // считаем количество ответов, только для дочерних комментариев
                  })
-                 .ToListAsync();
+                 .ToListAsync(cancellationToken);
 
             /* var commentsResponse = rawComments.Select(c => new CommentResponse
              {
@@ -176,7 +176,7 @@ namespace Comments.Application.Services
             return commentsResponse;
         }
 
-        public async Task<CommentResponse> GetCommentById(int id)
+        public async Task<CommentResponse> GetCommentById(int id, CancellationToken cancellationToken)
         {
             var rawComment = await _dbContext.Comments
                 .Where(c => c.Id == id)
@@ -191,7 +191,7 @@ namespace Comments.Application.Services
                     OriginalTextFileName = c.OriginalTextFileName,
                    ReplyCount = c.Children.Count
                 })
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cancellationToken);
 
             if (rawComment == null)
                 throw new KeyNotFoundException($"Comment for id: {id} not found");

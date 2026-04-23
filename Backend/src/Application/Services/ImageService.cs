@@ -32,7 +32,7 @@ namespace Comments.Application.Services
             _logger = logger;
         }
 
-        public async Task<Guid> ProcessAndSaveImageAsync(IFormFile imageFile)
+        public async Task<Guid> ProcessAndSaveImageAsync(IFormFile imageFile, CancellationToken cancellationToken)
         {
             // checking file size
             if (imageFile.Length > MaxFileSize)
@@ -72,11 +72,11 @@ namespace Comments.Application.Services
             try
             {
                 await using var imageStream = imageFile.OpenReadStream();
-                using var image = await Image.LoadAsync(imageStream);
+                using var image = await Image.LoadAsync(imageStream, cancellationToken);
                 await using var originalStream = new FileStream(originalPath, FileMode.Create);
 
                 // Save original image in its original format
-                await SaveImageAsync(image, originalStream, extension);
+                await SaveImageAsync(image, originalStream, extension, cancellationToken);
 
                 if (image.Width > MaxWidth || image.Height > MaxHeight)
                 {
@@ -91,7 +91,8 @@ namespace Comments.Application.Services
                     {
                         Quality = 75,
                         Method = WebpEncodingMethod.BestQuality
-                    });
+                    },
+                    cancellationToken);
                 }
                 
                 return imageId;
@@ -126,12 +127,12 @@ namespace Comments.Application.Services
             image.Mutate(x => x.Resize(newWidth, newHeight));
         }
 
-        private async Task SaveImageAsync(Image image, Stream stream, string extension)
+        private async Task SaveImageAsync(Image image, Stream stream, string extension, CancellationToken cancellationToken)
         {
             if (!Encoders.TryGetValue(extension, out var encoder))
                 throw new ArgumentException($"Unsupported image format: {extension}");
 
-            await image.SaveAsync(stream, encoder);
+            await image.SaveAsync(stream, encoder, cancellationToken);
         }
 
         public string? GetImagePreviewUrl(Guid? imageId)

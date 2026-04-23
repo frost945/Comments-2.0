@@ -18,14 +18,14 @@ namespace Comments.Api.Controllers
 
         // CREATE comment
         [HttpPost]
-        public async Task<IActionResult> CreateCommentAsync([FromForm] CommentRequest commentRequest)
+        public async Task<IActionResult> CreateCommentAsync([FromForm] CommentRequest commentRequest, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var comment = await _commentService.CreateCommentAsync(commentRequest, commentRequest.File);
+            var comment = await _commentService.CreateCommentAsync(commentRequest, cancellationToken, commentRequest.File);
 
             // Return 201 Created with location header pointing to the new comment
             return CreatedAtAction(nameof(GetCommentById), new { id = comment.Id }, comment);
@@ -34,9 +34,9 @@ namespace Comments.Api.Controllers
         // GET root (parent) comments
         // api/comments?sortBy=createdAt&ascending=true&skip=0
         [HttpGet]
-        public async Task<IActionResult> GetComments([FromQuery] CommentQuery query)
+        public async Task<IActionResult> GetComments([FromQuery] CommentQuery query, CancellationToken cancellationToken)
         {
-            var parentComments = await _commentService.GetCommentsAsync(query);
+            var parentComments = await _commentService.GetCommentsAsync(query, cancellationToken);
 
             return Ok(parentComments);
         }
@@ -44,11 +44,11 @@ namespace Comments.Api.Controllers
         // GET replies (children) of comment
         // api/comments/{id}/replies?skip=0
         [HttpGet("{id:int}/replies")]
-        public async Task<IActionResult> GetReplies(int id, [FromQuery] int skip = 0)
+        public async Task<IActionResult> GetReplies(int id, CancellationToken cancellationToken, [FromQuery] int skip = 0)
         {
             var query = new CommentQuery { Skip = skip };
 
-            var replies = await _commentService.GetCommentsAsync(query, parentId: id);
+            var replies = await _commentService.GetCommentsAsync(query, cancellationToken, parentId: id);
 
             return Ok(replies);
         }
@@ -56,9 +56,9 @@ namespace Comments.Api.Controllers
         // GET single comment
         // api/comments/{id}
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetCommentById(int id)
+        public async Task<IActionResult> GetCommentById(int id, CancellationToken cancellationToken)
         {
-            var comment = await _commentService.GetCommentById(id);
+            var comment = await _commentService.GetCommentById(id, cancellationToken);
 
             return Ok(comment);
         }

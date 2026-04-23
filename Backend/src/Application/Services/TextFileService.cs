@@ -16,7 +16,7 @@ namespace Comments.Application.Services
             _logger = logger;
         }
 
-        public async Task<(Guid fileId, string originalFileName)> ProcessAndSaveTextFileAsync(IFormFile textFile)
+        public async Task<(Guid fileId, string originalFileName)> ProcessAndSaveTextFileAsync(IFormFile textFile, CancellationToken cancellationToken)
         {
             if (textFile.Length > MaxFileSize)
             {
@@ -34,7 +34,7 @@ namespace Comments.Application.Services
             await using (var stream = textFile.OpenReadStream())
             using (var reader = new StreamReader(stream, Encoding.UTF8))
             {
-                content = await reader.ReadToEndAsync();
+                content = await reader.ReadToEndAsync(cancellationToken);
             }
 
             // Check encoding and content
@@ -60,7 +60,7 @@ namespace Comments.Application.Services
                 // Save file
                 await using var fileStream = new FileStream(path, FileMode.Create);
                 await using var writer = new StreamWriter(fileStream, Encoding.UTF8);
-                await writer.WriteAsync(content);
+                await writer.WriteAsync(content.AsMemory(), cancellationToken);
 
                 return (fileId, originalFileName);
             }
