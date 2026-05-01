@@ -26,27 +26,5 @@ namespace Comments.Api.Controllers
 
             return PhysicalFile(path, "text/plain");
         }
-
-      /* [HttpGet("image/preview/{id:guid}")]
-        public IActionResult DownloadImage(Guid id)
-        {
-            Console.WriteLine("start DownloadImage controller");
-           var result = _imageService.GetImagePreviewFile(id);
-
-            if (result == null || !System.IO.File.Exists(result.Value.path))
-                return NotFound();
-
-            //var provider = new FileExtensionContentTypeProvider();
-            //provider.TryGetContentType(result.Value.path, out var contentType);
-
-           // if (contentType == null)
-             //   contentType = "application/octet-stream";
-
-            var contentType = $"image/{result.Value.contentType}";
-            Console.WriteLine($"Content-Type: {contentType}");
-            Console.WriteLine($"File Path: {Path.GetFileName(result.Value.path)}");
-
-            return PhysicalFile(result.Value.path, contentType);
-        }*/
     }
 }

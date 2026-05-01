@@ -82,19 +82,6 @@ namespace Comments.Application.Services
 
             _dbContext.Add(comment);
             await _dbContext.SaveChangesAsync(cancellationToken);
-               
-
-            /* var commentResponse = new CommentResponse
-             {
-                 Id = comment.Id,
-                 UserName = comment.UserName,
-                 Text = comment.Text,
-                 CreatedAt = comment.CreatedAt.ToString("dd-MM-yyyy HH:mm"),
-                 ImageId = comment.ImageId,
-                 ImageOriginalUrl = _imageService.GetImageOriginalUrl(comment.ImageId),
-                 TextFileId = comment.TextFileId,
-                 TextFileName = comment.OriginalTextFileName
-             };*/
 
             var imagePreviewUrl = _imageService.GetImagePreviewUrl(comment.ImageId);
             var imageOriginalUrl = _imageService.GetImageOriginalUrl(comment.ImageId);
@@ -150,24 +137,11 @@ namespace Comments.Application.Services
                     ImageId = c.ImageId,
                     TextFileId = c.TextFileId,
                     OriginalTextFileName = c.OriginalTextFileName,
-                   // ReplyCount = c.Children.Count 
-                    ReplyCount = parentId==null ? c.Children.Count
-                    : 0 // считаем количество ответов, только для дочерних комментариев
+                    ReplyCount = parentId==null
+                    ? c.Children.Count
+                    : 0 // count the number of replies only for parent comments
                  })
                  .ToListAsync(cancellationToken);
-
-            /* var commentsResponse = rawComments.Select(c => new CommentResponse
-             {
-                 Id = c.Id,
-                 UserName = c.UserName,
-                 Text = c.Text,
-                 CreatedAt = c.CreatedAt.ToString("dd-MM-yyyy HH:mm"),
-                 ImageId = c.ImageId,
-                 ImageOriginalUrl = _imageService.GetImageOriginalUrl(c.ImageId),
-                 TextFileId = c.TextFileId,
-                 TextFileName = c.OriginalTextFileName,
-                 ReplyCount = c.ReplyCount
-             }).ToList();*/
 
             var commentsResponse = rawComments
             .Select(c => CommentMapper.FromRaw(c, _imageService.GetImagePreviewUrl(c.ImageId), _imageService.GetImageOriginalUrl(c.ImageId)))

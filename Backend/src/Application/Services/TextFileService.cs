@@ -76,22 +76,6 @@ namespace Comments.Application.Services
             }
         }
 
-        public string? GetTextFileUrl(Guid? fileId)
-        {
-            if (fileId is null)
-                return null;
-
-            var path = Path.Combine(
-                _environment.ContentRootPath,
-               "uploads", "textfiles",
-               $"{fileId}.txt");
-
-            if (!File.Exists(path))
-                return null;
-
-            return $"/uploads/textfiles/{fileId}.txt";
-        }
-
         public string GetTextFilePath(Guid fileId)
         {
             string path = Path.Combine(
