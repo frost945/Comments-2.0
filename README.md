@@ -97,9 +97,9 @@ docker-compose up -d
 
 ## API Endpoints
 - `POST /api/comments`: Create a new comment
-- `GET /api/comments/parent`: Get all parent comments
-- `GET /api/comments/children/{parentId}`: Get all replies by id
-- `GET /api/comments?id={id}`: Get comment by id
+- `GET /api/comments?sortBy=createdAt&ascending=true&skip=0`: Get root (parent) comments
+- `GET /api/comments/{id}/replies?skip=0`: GET replies (children) of comment
+- `GET /api/comments/{id}`: Get single comment by id
 - `GET api/files/text/{id}`: Get text file by id
 
 ## Proxying
