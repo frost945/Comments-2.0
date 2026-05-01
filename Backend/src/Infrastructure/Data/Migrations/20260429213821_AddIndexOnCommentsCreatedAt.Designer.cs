@@ -4,6 +4,7 @@ using Comments.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Comments.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(CommentsDbContext))]
-    partial class CommentsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260429213821_AddIndexOnCommentsCreatedAt")]
+    partial class AddIndexOnCommentsCreatedAt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -59,9 +62,11 @@ namespace Comments.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ParentId", "CreatedAt");
+                    b.HasIndex("CreatedAt");
 
-                    b.ToTable("Comments", (string)null);
+                    b.HasIndex("ParentId");
+
+                    b.ToTable("Comments");
 
                     b.HasData(
                         new

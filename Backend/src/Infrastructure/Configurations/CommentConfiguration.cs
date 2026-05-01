@@ -14,6 +14,8 @@ namespace Comments.Infrastructure.Configurations
                .HasForeignKey(c => c.ParentId)
                .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasIndex(c => new { c.ParentId, c.CreatedAt });
+
             // Seed data
             builder.HasData(
                 new { Id = 1, ParentId = (int?)null, UserName = "Alice", Email = "www@gmail.com", Text = "This is a great post!", CreatedAt = new DateTime(2025, 12, 28, 23, 29, 00, 400) },
