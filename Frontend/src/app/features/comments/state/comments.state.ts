@@ -30,8 +30,28 @@ export class CommentsState {
   loadingReplies = false;
   hasMoreReplies = true;
 
-  constructor(private service: CommentsService, private storage: SessionStorageService) {
+  // keyset pagination flags
+  isKeysetMode = computed(() => this.sortField() === 'CreatedAt');
+  isPrevPageKeyset = false;
 
+  // keyset comments cursors
+  lastCreatedAtComment = <string | null>(null);
+  lastIdComment = <number | null>(null);
+  firstCreatedAtComment = <string | null>(null);
+  firstIdComment = <number | null>(null);
+
+  // keyset replies cursors
+  lastCreatedAtReply = computed(() => {
+    const replies = this.replies();
+    return replies.length > 0 ? replies[replies.length - 1].createdAt : null;
+  });
+
+  lastIdReply = computed(() => {
+    const replies = this.replies();
+    return replies.length > 0 ? replies[replies.length - 1].id : null;
+  });
+
+  constructor(private service: CommentsService, private storage: SessionStorageService) {
     // Restore the startup state
     const saved = this.storage.get<any>(STORAGE_KEYS.COMMENTS_STATE);
     if (saved) {
@@ -64,17 +84,17 @@ export class CommentsState {
         });
 
       const parentId=this.parentId();
-      
+
       if (parentId === null){
         // signals tracked for main page of comments
         const sort = this.sortField();
         const dir = this.sortDir();
         const skip = this.skip();
-
+        // set default replies loading flags
         this.loadingReplies = false;
         this.hasMoreReplies = true;
 
-        this.loadComments(skip, sort, dir);
+        this.loadCommentsAsync(skip, sort, dir);
         
         // reset data, if replies page is closed
         untracked(() => { 
@@ -86,20 +106,46 @@ export class CommentsState {
     });
   }
 
-   loadComments(skip: number, sort: string, dir: boolean) {
+  private requestId = 0;
+  async loadCommentsAsync(skip: number, sort: string, dir: boolean) {
+   // only for sorting by CreatedAt, we use reset pagination
+    if(this.requestId===0 && this.sortField() === 'CreatedAt') this. resetPagination();
+    ++this.requestId;
 
-    this.service.getComments(skip, sort, dir)
-    .subscribe(data =>{
-      //If 25 comments on the last page, then we restore the display for the nextPage button
-      if (data.length === 0 && this.pageNumber() > 1) {
+    const cursorCreatedAt = this.isPrevPageKeyset
+      ? this.firstCreatedAtComment
+      : this.lastCreatedAtComment;
+    
+    const cursorId = this.isPrevPageKeyset
+      ? this.firstIdComment
+      : this.lastIdComment;
+
+    const sign = this.isPrevPageKeyset ? -1 : 1;
+
+    console.debug("loadComments- CursorCreatedAt: ", cursorCreatedAt, " CursorId: ", cursorId, " isPrevPageKeyset: ", this.isPrevPageKeyset, "sign: ", sign);
+
+    const data = await firstValueFrom(this.service.getComments(skip, sort, dir, cursorCreatedAt, cursorId, sign));
+
+    console.debug("comments loaded: ", [...data]);
+
+    //If 25 comments on the last page, then we restore the display for the nextPage button
+    if (data.length === 0 && this.pageNumber() > 1) {
+      console.debug("No comments loaded, returning to the previous page");
       this.prevPage();
       return;
     }
-     this.comments.set(data);
-  });
+    
+    this.comments.set(data);
+
+    this.isPrevPageKeyset = false;
+
+    this.lastCreatedAtComment = null;
+    this.lastIdComment = null;
+    this.firstCreatedAtComment = null;
+    this.firstIdComment = null;
   }
 
-  async loadReplies(parentId: number){
+  async loadRepliesAsync(parentId: number){
     console.debug("loadreplies start:", "loadingReplies: ", this.loadingReplies, 'parentId: ', parentId);
 
     let parentComment = this.parentComment();
@@ -124,8 +170,9 @@ export class CommentsState {
 
     const skipReplies = untracked(() => this.skipReplies());
 
-    this.service.getReplies(parentId, skipReplies)
-    .subscribe(data => {
+    const data = await firstValueFrom(this.service.getReplies(parentId, this.lastCreatedAtReply(), this.lastIdReply()));
+
+    console.debug("replies loaded: ", data);
 
     const skip = this.skipReplies();
     if(skip + data.length >= replyCount){
@@ -141,7 +188,6 @@ export class CommentsState {
 
     this.loadingReplies = false;
       console.debug("loadreplies finish:", "skip: ", skip, "hasMoreReplies: ", this.hasMoreReplies);
-  });
   }
 
   async loadParentCommentAsync(id: number): Promise<Comment | null> {
@@ -184,12 +230,6 @@ export class CommentsState {
 
     // Update replyCount for parent comment
     this.parentComment.update(c => c ? { ...c, replyCount: c.replyCount + 1 } : c);
-    /*this.comments.update(list =>
-      list.map(c =>
-      c.id === parentId
-      ? { ...c, replyCount: c.replyCount + 1 }
-      : c
-      ));*/
 
     // on the last replies page — append new reply to the end
     if(!this.hasMoreReplies){
@@ -237,12 +277,23 @@ nextPage() {
   console.debug('nextPage');
   if (!this.hasNextPage()) return;
 
+  if (this.isKeysetMode()) {
+    this.lastCreatedAtComment = this.comments()[this.comments().length - 1].createdAt;
+    this.lastIdComment = this.comments()[this.comments().length - 1].id;
+  }
   this.skip.update(v => v + this.pageSize);
   this.pageNumber.update(v => v + 1);
 }
 
 prevPage() {
   if (!this.hasPrevPage()) return;
+
+    if (this.isKeysetMode()) {
+      this.firstCreatedAtComment = this.comments()[0].createdAt;
+      this.firstIdComment = this.comments()[0].id;
+      this.isPrevPageKeyset = true;
+      console.debug('prevPage in keyset mode- isPrevPageKeyset set to true', this.isPrevPageKeyset);
+    }
 
   this.skip.update(v => v - this.pageSize);
   this.pageNumber.update(v => v - 1);
@@ -255,9 +306,8 @@ private resetPagination(){
 }
 
 private loadDefaultPageComments(){
-
-    this.resetPagination();
-    this.sortField.set("CreatedAt");
-    this.sortDir.set(true);
+  this.resetPagination();
+  this.sortField.set("CreatedAt");
+  this.sortDir.set(true);
 }
 }

@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Comment } from '../../features/comments/models/comment.model';
-import { tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -13,28 +12,55 @@ export class CommentsService {
 
   constructor(private http: HttpClient) {}
 
-  getComments(skip: number, sortBy: string, ascending: boolean): Observable<Comment[]> {
-    const params = new HttpParams()
-    .set('skip', skip)
+  getComments(skip: number, sortBy: string, ascending: boolean, cursorCreatedAt?: string | null, cursorId?: number | null, sign?: number): Observable<Comment[]> {
+    let params = new HttpParams()
     .set('sortBy', sortBy)
     .set('ascending', ascending);
 
-    return this.http.get<Comment[]>(this.apiUrl, {params})
-    .pipe(tap(comments => {
-        console.debug('get comments:', comments);
-      })
-    );
+    //for sorting by createdAt, we use keyset pagination
+    if(sortBy === 'CreatedAt') {
+      if (cursorCreatedAt != null && cursorId != null) {
+        params = params
+        .set('cursorCreatedAt', cursorCreatedAt)
+        .set('cursorId', cursorId)
+      }
+       params = params.set('sign', sign ?? 1); // default to 1 for next page, -1 for prev page
+    }
+    else {
+      params = params.set('skip', skip);
+    }
+    
+    const url = `${this.apiUrl}`;
+
+    const fullUrl = params.keys().length
+    ? `${url}?${params.toString()}`
+    : url;
+
+    console.debug('comment GET URL:', fullUrl);
+
+    return this.http.get<Comment[]>(fullUrl);
   } 
 
-  getReplies(parentId: number, skip: number): Observable<Comment[]> {
-    const params = new HttpParams()
-    .set('skip', skip);
+  getReplies(parentId: number, lastCreatedAt?: string | null, lastId?: number | null): Observable<Comment[]> {
 
-    return this.http.get<Comment[]>(`${this.apiUrl}/${parentId}/replies`, {params})
-    .pipe(tap(replies => {
-        console.debug('get replies:', replies);
-      })
-    );
+    let params = new HttpParams()
+    console.debug(`Getting replies for parentId=${parentId} with keyset pagination. lastCreatedAt=${lastCreatedAt}, lastId=${lastId}`);
+    
+    if (lastCreatedAt && lastId) {
+    params = params
+    .set('cursorCreatedAt', lastCreatedAt)
+    .set('cursorId', lastId);
+    }
+
+    const url = `${this.apiUrl}/${parentId}/replies`;
+
+    const fullUrl = params.keys().length
+    ? `${url}?${params.toString()}`
+    : url;
+
+    console.debug('replies GET URL:', fullUrl);
+
+    return this.http.get<Comment[]>(fullUrl)
   }
 
   getCommentById(id: number): Observable<Comment> {
