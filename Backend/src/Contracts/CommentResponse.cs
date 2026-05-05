@@ -5,7 +5,7 @@
         public int Id { get; set; }
         public string UserName { get; set; } = string.Empty;
         public string Text { get; set; } = string.Empty;
-        public string CreatedAt { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
         public Guid? TextFileId { get; set; }
         public string? TextFileName { get; set; }
         public string? ImagePreviewUrl { get; set; }
@@ -17,7 +17,7 @@
             Id = id;
             UserName = userName;
             Text = text;
-            CreatedAt = createdAt.ToLocalTime().ToString("dd-MM-yyyy HH:mm");
+            CreatedAt = createdAt;
             TextFileId = textFileId;
             TextFileName = textFileName;
             ImagePreviewUrl = imagePreviewUrl;

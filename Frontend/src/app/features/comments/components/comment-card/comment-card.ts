@@ -4,11 +4,12 @@ import { Comment } from '../../models/comment.model';
 import { sanitizeHtml } from '../../../../shared/utils/html-security.util';
 import { GlightboxDirective } from '../../../../shared/directives/glightbox.directives';
 import { FileDownloadService } from '../../../../core/services/file-download.service';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-comment-card',
   standalone: true,
-  imports: [GlightboxDirective],
+  imports: [GlightboxDirective, DatePipe],
   templateUrl: './comment-card.html',
   styleUrls: ['./comment-card.css']
 })

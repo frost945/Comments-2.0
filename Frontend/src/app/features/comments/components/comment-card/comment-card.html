@@ -6,7 +6,7 @@
     </span>
 
     <span class="comment-date">
-      {{ comment().createdAt }}
+      {{ comment().createdAt | date:'dd-MM-yyyy HH:mm' }}
     </span>
 
       @if (showReplyButton()){
