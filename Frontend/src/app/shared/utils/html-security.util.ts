@@ -21,7 +21,7 @@ export function sanitizeHtml(input: string): string {
 
   DOMPurify.removeHook('afterSanitizeAttributes', hook);
 
-  console.debug('Sanitized HTML cleaned:', cleaned);
+  //console.debug('Sanitized HTML cleaned:', cleaned);
   return cleaned;
 }
 

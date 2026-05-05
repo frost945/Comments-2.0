@@ -34,7 +34,7 @@ export class RepliesList implements AfterViewInit, OnDestroy{
       if (!entry.isIntersecting) return;
         
         console.debug("Load more replies");
-        this.state.loadReplies(this.state.parentId()!);
+        this.state.loadRepliesAsync(this.state.parentId()!);
       },
       {
         root: null,       // viewport
