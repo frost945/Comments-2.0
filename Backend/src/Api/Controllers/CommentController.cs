@@ -44,9 +44,13 @@ namespace Comments.Api.Controllers
         // GET replies (children) of comment
         // api/comments/{id}/replies?skip=0
         [HttpGet("{id:int}/replies")]
-        public async Task<IActionResult> GetReplies(int id, CancellationToken cancellationToken, [FromQuery] int skip = 0)
+        public async Task<IActionResult> GetReplies(int id, string? cursorCreatedAt, int? cursorId, CancellationToken cancellationToken)
         {
-            var query = new CommentQuery { Skip = skip };
+            var query = new CommentQuery
+            {
+                CursorCreatedAt = string.IsNullOrEmpty(cursorCreatedAt) ? null : DateTime.Parse(cursorCreatedAt),
+                CursorId =  cursorId
+            };
 
             var replies = await _commentService.GetCommentsAsync(query, cancellationToken, parentId: id);
 
