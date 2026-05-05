@@ -14,7 +14,7 @@ namespace Comments.Infrastructure.Configurations
                .HasForeignKey(c => c.ParentId)
                .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasIndex(c => new { c.ParentId, c.CreatedAt });
+            builder.HasIndex(c => new { c.ParentId, c.CreatedAt, c.Id });
 
             // Seed data
             builder.HasData(
