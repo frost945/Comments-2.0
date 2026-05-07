@@ -81,6 +81,8 @@ builder.Services.AddScoped<ImageService>();
 builder.Services.AddScoped<TextFileService>();
 builder.Services.AddSingleton<UploadFolders>();
 
+builder.Services.AddMemoryCache();
+
 const string frontendCors = "frontend";
 builder.Services.AddCors(options =>
 {

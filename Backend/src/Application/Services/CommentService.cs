@@ -7,7 +7,7 @@ using Comments.Models;
 using Comments.Models.Enums;
 using Comments.Models.Filters;
 using Microsoft.EntityFrameworkCore;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Comments.Application.Services
 {
@@ -17,12 +17,14 @@ namespace Comments.Application.Services
         private readonly ImageService _imageService;
         private readonly TextFileService _textFileService;
         private readonly ILogger<CommentService> _logger;
-        public CommentService(CommentsDbContext dbContext, ImageService imageService, TextFileService textFileService, ILogger<CommentService> logger)
+        private readonly IMemoryCache _cache;
+        public CommentService(CommentsDbContext dbContext, ImageService imageService, TextFileService textFileService, ILogger<CommentService> logger, IMemoryCache cache)
         {
             _dbContext = dbContext;
             _imageService = imageService;
             _textFileService = textFileService;
             _logger = logger;
+            _cache = cache;
         }
 
         public async Task<CommentResponse> CreateCommentAsync(CommentRequest request, CancellationToken cancellationToken, IFormFile? file = null)
@@ -104,8 +106,33 @@ namespace Comments.Application.Services
             // for createdAt - using keyset pagination
             if (commentQuery.SortBy == CommentSortField.createdAt)
             {
-               return await GetCommentsKeysetAsync(commentQuery, cancellationToken, parentId);
+                // cache only default page comments
+                bool isCacheable =
+                    parentId == null &&
+                    commentQuery.SortBy == CommentSortField.createdAt &&
+                    commentQuery.Ascending == true;
+
+                if (isCacheable)
+                {
+                    var cacheKey = "comments:root:createdAt:asc";
+
+                    var cachedResult = await _cache.GetOrCreateAsync(cacheKey, async entry =>
+                    {
+                        entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(10);
+
+                        var data = await GetCommentsKeysetAsync(commentQuery, cancellationToken, parentId);
+                        return data ?? new List<CommentResponse>();
+                    });
+
+                    return cachedResult ?? new List<CommentResponse>();
+                }
             }
+
+            
+            /*if (commentQuery.SortBy == CommentSortField.createdAt)
+            {
+               return await GetCommentsKeysetAsync(commentQuery, cancellationToken, parentId);
+            }*/
 
             Console.WriteLine("Using OFFSET pagination");
 
