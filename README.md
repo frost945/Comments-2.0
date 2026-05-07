@@ -4,10 +4,8 @@ Supports nested replies, file uploads, and secure HTML rendering.
 
 ## Features
 - Posting comments and replies to comments
-- Saving comments and user data in a relational database
+- Saving comments in the relational database
 - Tabular output of root comments sorted by: username, email, createdAt (in both directions)
-- Default sorting - LIFO
-- Pagination - 25 posts per page
 - For replies page - infinite scrolling
 - The ability to add a picture or text file
 - Viewing images is enhanced with visual effects using GLightbox
@@ -97,8 +95,8 @@ docker-compose up -d
 
 ## API Endpoints
 - `POST /api/comments`: Create a new comment
-- `GET /api/comments?sortBy=createdAt&ascending=true&skip=0`: Get root (parent) comments
-- `GET /api/comments/{id}/replies?skip=0`: GET replies (children) of comment
+- `GET /api/comments`: Get root (parent) comments
+- `GET /api/comments/{id}/replies`: GET replies (children) of comment
 - `GET /api/comments/{id}`: Get single comment by id
 - `GET api/files/text/{id}`: Get text file by id
 
