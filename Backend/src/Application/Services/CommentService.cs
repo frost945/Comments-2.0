@@ -106,7 +106,7 @@ namespace Comments.Application.Services
             // for createdAt - using keyset pagination
             if (commentQuery.SortBy == CommentSortField.createdAt)
             {
-                // cache only default page comments
+                // cache only default page comments with sorting by createdAt in ASC order, without parentId (root comments)
                 bool isCacheable =
                     parentId == null &&
                     commentQuery.SortBy == CommentSortField.createdAt &&
@@ -114,7 +114,8 @@ namespace Comments.Application.Services
 
                 if (isCacheable)
                 {
-                    var cacheKey = "comments:root:createdAt:asc";
+                    var cacheKey = $"comments:root:createdAt:asc:{commentQuery.CursorCreatedAt}:{commentQuery.CursorId}";
+
 
                     var cachedResult = await _cache.GetOrCreateAsync(cacheKey, async entry =>
                     {
@@ -126,16 +127,13 @@ namespace Comments.Application.Services
 
                     return cachedResult ?? new List<CommentResponse>();
                 }
+                // for non-cacheable requests, for sorting by DESC order
+                else
+                {
+                    return await GetCommentsKeysetAsync(commentQuery, cancellationToken, parentId);
+                }
             }
-
-            
-            /*if (commentQuery.SortBy == CommentSortField.createdAt)
-            {
-               return await GetCommentsKeysetAsync(commentQuery, cancellationToken, parentId);
-            }*/
-
-            Console.WriteLine("Using OFFSET pagination");
-
+           
             var comments = _dbContext.Comments
                 .AsNoTracking()
                 .AsQueryable();
@@ -281,6 +279,7 @@ namespace Comments.Application.Services
             // On the first page, we sort by the createdAt and Id. For other pages,  will be using keyset pagination
             else
             {
+                Console.WriteLine("First page or no cursor provided, using default sorting");
                 comments = commentQuery.Ascending
                     ? comments.OrderBy(c => c.CreatedAt).ThenBy(c => c.Id)
                     : comments.OrderByDescending(c => c.CreatedAt).ThenByDescending(c => c.Id);
