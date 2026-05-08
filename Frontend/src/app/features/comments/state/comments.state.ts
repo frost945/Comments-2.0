@@ -120,11 +120,11 @@ export class CommentsState {
       ? this.firstIdComment
       : this.lastIdComment;
 
-    const sign = this.isPrevPageKeyset ? -1 : 1;
+    const direction = this.isPrevPageKeyset ? false : true; // false for prev page, true for next page
 
-    console.debug("loadComments- CursorCreatedAt: ", cursorCreatedAt, " CursorId: ", cursorId, " isPrevPageKeyset: ", this.isPrevPageKeyset, "sign: ", sign);
+    console.debug("loadComments- CursorCreatedAt: ", cursorCreatedAt, " CursorId: ", cursorId, " isPrevPageKeyset: ", this.isPrevPageKeyset, "direction: ", direction);
 
-    const data = await firstValueFrom(this.service.getComments(skip, sort, dir, cursorCreatedAt, cursorId, sign));
+    const data = await firstValueFrom(this.service.getComments(skip, sort, dir, cursorCreatedAt, cursorId, direction));
 
     console.debug("comments loaded: ", [...data]);
 

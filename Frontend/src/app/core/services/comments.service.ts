@@ -12,7 +12,7 @@ export class CommentsService {
 
   constructor(private http: HttpClient) {}
 
-  getComments(skip: number, sortBy: string, ascending: boolean, cursorCreatedAt?: string | null, cursorId?: number | null, sign?: number): Observable<Comment[]> {
+  getComments(skip: number, sortBy: string, ascending: boolean, cursorCreatedAt?: string | null, cursorId?: number | null, direction?: boolean): Observable<Comment[]> {
     let params = new HttpParams()
     .set('sortBy', sortBy)
     .set('ascending', ascending);
@@ -24,7 +24,7 @@ export class CommentsService {
         .set('cursorCreatedAt', cursorCreatedAt)
         .set('cursorId', cursorId)
       }
-       params = params.set('sign', sign ?? 1); // default to 1 for next page, -1 for prev page
+       params = params.set('direction', direction ?? true); // default is true for next page, false for prev page
     }
     else {
       params = params.set('skip', skip);

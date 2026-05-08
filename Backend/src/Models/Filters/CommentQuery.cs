@@ -9,9 +9,9 @@ namespace Comments.Models.Filters
         public CommentSortField SortBy { get; set; } = CommentSortField.createdAt;
         public bool Ascending { get; set; } = true;
 
-        // keyset pagination
+        // keyset pagination - only sort by createdAt field
         public int? CursorId { get; set; }
         public DateTime? CursorCreatedAt { get; set; }
-        public int? Sign { get; set; } = 1; // 1 for next page, -1 for prev page
+        public bool? Direction { get; set; } = true; // true for next page, false for prev page
     }
 }

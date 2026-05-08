@@ -228,7 +228,7 @@ namespace Comments.Application.Services
             if (commentQuery.CursorCreatedAt != null && commentQuery.CursorId != null)
             {   
                 //move next page
-                if (commentQuery.Sign==1)
+                if (commentQuery.Direction == true)
                 {
                     if(commentQuery.Ascending)
                     {
