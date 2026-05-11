@@ -42,7 +42,7 @@ namespace Comments.Application.Services
             Guid? textFileId = null;
             string? originalTextFileName = null;
 
-            if (file?.Length > 0)
+            if (file != null)
             {
                 var fileType = DetectFile(file);
 

@@ -9,15 +9,28 @@ namespace Comments.Application.Services
         private readonly ILogger<TextFileService> _logger;
         private const long MaxFileSize = 100 * 1024; // 100 KB
         private readonly string[] _allowedExtensions = { ".txt" };
+        private readonly string _textFilesDirectory;
 
         public TextFileService(IWebHostEnvironment environment, ILogger<TextFileService> logger)
         {
             _environment = environment;
             _logger = logger;
+            _textFilesDirectory = Path.Combine(_environment.ContentRootPath, "uploads", "textfiles");
         }
+        
 
         public async Task<(Guid fileId, string originalFileName)> ProcessAndSaveTextFileAsync(IFormFile textFile, CancellationToken cancellationToken)
         {
+           if (textFile == null)
+            {
+                throw new ArgumentNullException(nameof(textFile));
+            }
+
+            if(textFile.Length == 0)
+            {
+                throw new ArgumentException("File is empty.");
+            }
+
             if (textFile.Length > MaxFileSize)
             {
                 throw new ArgumentException($"File size must not exceed {MaxFileSize / 1024}KB");
@@ -29,38 +42,28 @@ namespace Comments.Application.Services
                 throw new ArgumentException("Only TXT format is allowed");
             }
 
-            // Reading the contents of the file
-            string content;
-            await using (var stream = textFile.OpenReadStream())
-            using (var reader = new StreamReader(stream, Encoding.UTF8))
-            {
-                content = await reader.ReadToEndAsync(cancellationToken);
-            }
-
-            // Check encoding and content
-            if (string.IsNullOrWhiteSpace(content))
-            {
-                throw new ArgumentException("File is empty or contains only spaces.");
-            }
-
             // create unique file name
             var fileId = Guid.NewGuid();
 
             // save original file name
-            var originalFileName = textFile.FileName;
+            var originalFileName = Path.GetFileName(textFile.FileName);
 
-            var dir = Path.Combine(_environment.ContentRootPath, "uploads", "textfiles");
-            var path = Path.Combine(dir, $"{fileId}{extension}");
+            Directory.CreateDirectory(_textFilesDirectory);
+
+            var path = Path.Combine(_textFilesDirectory, $"{fileId}{extension}");
 
             try
             {
-                if (!Directory.Exists(dir))
-                    Directory.CreateDirectory(dir);
-
                 // Save file
-                await using var fileStream = new FileStream(path, FileMode.Create);
-                await using var writer = new StreamWriter(fileStream, Encoding.UTF8);
-                await writer.WriteAsync(content.AsMemory(), cancellationToken);
+                await using var fileStream = new FileStream(
+                    path,
+                    FileMode.Create,
+                    FileAccess.Write,
+                    FileShare.None,
+                    bufferSize: 81920,
+                    useAsync: true);
+              
+                await textFile.CopyToAsync(fileStream, cancellationToken);
 
                 return (fileId, originalFileName);
             }
@@ -78,12 +81,9 @@ namespace Comments.Application.Services
 
         public string GetTextFilePath(Guid fileId)
         {
-            string path = Path.Combine(
-                _environment.ContentRootPath,
-               "uploads", "textfiles",
-               $"{fileId}.txt");
-
-            return path;
+            return Path.Combine(
+                _textFilesDirectory,
+                $"{fileId}.txt");
         }
     }
 }
