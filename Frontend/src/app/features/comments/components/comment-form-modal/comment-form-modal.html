@@ -51,7 +51,7 @@
                         @if(f.errors['fileType']){Недопустимый тип файла}
                         @else if(f.errors['imageSize']){Размер изображения не должен превышать 5MB}
                         @else if(f.errors['textSize']){Размер txt файла не должен превышать 100KB}
-
+                        @else if(f.errors['emptyTextFile']){Невозможно отправить пустой файл}
                     </div>
                 }
 

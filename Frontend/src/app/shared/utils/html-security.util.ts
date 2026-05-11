@@ -21,7 +21,6 @@ export function sanitizeHtml(input: string): string {
 
   DOMPurify.removeHook('afterSanitizeAttributes', hook);
 
-  //console.debug('Sanitized HTML cleaned:', cleaned);
   return cleaned;
 }
 
@@ -43,9 +42,6 @@ export function validateHtml(input: string) {
 
   const normalizedInput = normalizeForCompare(input);
   const normalizedCleaned = normalizeForCompare(cleaned);
-
-  console.debug('normalizedInput:', normalizedInput);
-  console.debug('normalizedCleaned:', normalizedCleaned);
 
   const isValid = normalizedInput === normalizedCleaned;
 

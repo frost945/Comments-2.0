@@ -71,19 +71,25 @@ export class CommentFormModal {
   }
 
   onFileChange(event: Event) {
+    
+    const input = event.target as HTMLInputElement;
 
-  const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
 
-  if (!input.files?.length) return;
+    const file = input.files[0];
 
-  const file = input.files[0];
+    this.form.controls.file.setValue(file);
 
-  console.debug('Selected file:', file);
-  
-  this.form.controls.file.setValue(file);
-  
-  // to display the error immediately
-  this.form.controls.file.markAsTouched();
+    // to display the error immediately
+    this.form.controls.file.markAsTouched();
+    
+    if (this.form.controls.file.invalid) {
+      // clear DOM input only, but the FormControl still contains the invalid file, so user could see error
+      input.value = '';
+      return;
+    }
+
+    console.debug('Selected file:', file);
 }
 
   async submit() {
@@ -105,9 +111,7 @@ export class CommentFormModal {
       formData.append('parentId', parentId.toString());
     }
 
-    console.debug('Appending file to FormData:', this.form.value.file);
     if (this.form.value.file) {
-      
       formData.append('file', this.form.value.file);
     }
 
