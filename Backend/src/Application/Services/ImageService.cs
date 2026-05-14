@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats;
+﻿using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Gif;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
@@ -14,27 +12,35 @@ namespace Comments.Application.Services
         private readonly IWebHostEnvironment _environment;
         private readonly ILogger<ImageService> _logger;
         private readonly string[] _allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
-        private const int MaxWidth = 320;
-        private const int MaxHeight = 240;
+        private const int MaxPreviewWidth = 320;
+        private const int MaxPreviewHeight = 240;
         private const long MaxFileSize = 5 * 1024 * 1024;
-        private static readonly Dictionary<string, IImageEncoder> Encoders =
-            new(StringComparer.OrdinalIgnoreCase)
-            {
-                [".jpg"] = new JpegEncoder { Quality = 80 },
-                [".jpeg"] = new JpegEncoder { Quality = 80 },
-                [".png"] = new PngEncoder(),
-                [".gif"] = new GifEncoder()
-            };
+        private readonly string _originalImagesDir;
+        private readonly string _previewImagesDir;
+        //for png
+        const int MaxImageWidth = 10000;
+        const int MaxImageHeight = 10000;
 
         public ImageService(IWebHostEnvironment environment, ILogger<ImageService> logger )
         {
             _environment = environment;
             _logger = logger;
+            _originalImagesDir = Path.Combine(_environment.ContentRootPath, "uploads", "images", "original");
+            _previewImagesDir = Path.Combine(_environment.ContentRootPath, "uploads", "images", "preview");
         }
 
         public async Task<Guid> ProcessAndSaveImageAsync(IFormFile imageFile, CancellationToken cancellationToken)
         {
-            // checking file size
+            if (imageFile == null)
+            {
+                throw new ArgumentNullException(nameof(imageFile), "No image was uploaded.");
+            }
+
+            if (imageFile.Length == 0)
+            {
+                throw new ArgumentException("The uploaded image is empty.");
+            }
+
             if (imageFile.Length > MaxFileSize)
             {
                 throw new ArgumentException($"The file size must not exceed {MaxFileSize / 1024 / 1024}MB");
@@ -44,47 +50,82 @@ namespace Comments.Application.Services
             var extension = Path.GetExtension(imageFile.FileName).ToLowerInvariant();
             if (!_allowedExtensions.Contains(extension))
             {
-                throw new ArgumentException("Acceptable formats: JPG, GIF, PNG");
+                throw new ArgumentException($"Unsupported image format: {extension}");
             }
 
             var imageId = Guid.NewGuid();
+
             //original image path
             var nameOriginal = $"{imageId}{extension}";
-            var originalDir = Path.Combine(_environment.ContentRootPath, "uploads", "images", "original");
-
-            if (!Directory.Exists(originalDir))
-            {
-                Directory.CreateDirectory(originalDir);
-            }
-
-            var originalPath = Path.Combine(originalDir, nameOriginal);
+            var originalPath = Path.Combine(_originalImagesDir, nameOriginal);
+            Directory.CreateDirectory(_originalImagesDir);
 
             //preview image path
             var previewName = $"{imageId}_preview.webp";
-            var previewDir = Path.Combine(_environment.ContentRootPath, "uploads", "images", "preview");
-
-            if (!Directory.Exists(previewDir))
-            {
-                Directory.CreateDirectory(previewDir);
-            }
-            var previewPath = Path.Combine(previewDir, previewName);
+            var previewPath = Path.Combine(_previewImagesDir, previewName);
+            Directory.CreateDirectory(_previewImagesDir);
 
             try
             {
                 await using var imageStream = imageFile.OpenReadStream();
+
+                var imageFormat = await Image.DetectFormatAsync(imageStream, cancellationToken);
+
+                if (imageFormat is null)
+                {
+                    throw new ArgumentException(
+                        "Unknown image format.");
+                }
+
+                // real format validation (not only extension)
+                if (imageFormat is not JpegFormat
+                    && imageFormat is not PngFormat
+                    && imageFormat is not GifFormat)
+                {
+                    throw new ArgumentException(
+                        "Unsupported image format.");
+                }
+
+                // rewind after DetectFormatAsync
+                imageStream.Position = 0;
+                
                 using var image = await Image.LoadAsync(imageStream, cancellationToken);
-                await using var originalStream = new FileStream(originalPath, FileMode.Create);
 
-                // Save original image in its original format
-                await SaveImageAsync(image, originalStream, extension, cancellationToken);
+                //в основном для png, чтобы избежать нагрузки сервера при обработке слишком больших изображений
+                if (image.Width > MaxImageWidth || image.Height > MaxImageHeight)
+                {
+                    throw new ArgumentException("Image dimensions are too large.");
+                }
 
-                if (image.Width > MaxWidth || image.Height > MaxHeight)
+                // rewind after LoadAsync
+                imageStream.Position = 0;
+
+                // save original file without re-encoding
+                await using (var originalStream = new FileStream(
+                    originalPath,
+                    FileMode.Create,
+                    FileAccess.Write,
+                    FileShare.None,
+                    bufferSize: 81920,
+                    useAsync: true))
+                {
+                    // Save original image in its original format
+                    await imageStream.CopyToAsync(originalStream, cancellationToken);
+                }
+
+                if (image.Width > MaxPreviewWidth || image.Height > MaxPreviewHeight)
                 {
                     using var previewImage = image.CloneAs<SixLabors.ImageSharp.PixelFormats.Rgba32>();
 
                     ResizeImage(previewImage);
-                  
-                    await using var previewStream = new FileStream(previewPath, FileMode.Create);
+
+                    await using var previewStream = new FileStream(
+                        previewPath,
+                        FileMode.Create,
+                        FileAccess.Write,
+                        FileShare.None,
+                        bufferSize: 81920,
+                        useAsync: true);
 
                     // Save preview image in WebP format
                     await previewImage.SaveAsync(previewStream, new WebpEncoder
@@ -117,8 +158,8 @@ namespace Comments.Application.Services
 
         private void ResizeImage(Image image)
         {
-            var ratioX = (double)MaxWidth / image.Width;
-            var ratioY = (double)MaxHeight / image.Height;
+            var ratioX = (double)MaxPreviewWidth / image.Width;
+            var ratioY = (double)MaxPreviewHeight / image.Height;
             var ratio = Math.Min(ratioX, ratioY);
 
             var newWidth = (int)(image.Width * ratio);
@@ -127,23 +168,12 @@ namespace Comments.Application.Services
             image.Mutate(x => x.Resize(newWidth, newHeight));
         }
 
-        private async Task SaveImageAsync(Image image, Stream stream, string extension, CancellationToken cancellationToken)
-        {
-            if (!Encoders.TryGetValue(extension, out var encoder))
-                throw new ArgumentException($"Unsupported image format: {extension}");
-
-            await image.SaveAsync(stream, encoder, cancellationToken);
-        }
-
         public string? GetImagePreviewUrl(Guid? imageId)
         {
             if (imageId == null)
                 return null;
 
-            var filePath = Path.Combine(
-                _environment.ContentRootPath,
-                "uploads", "images", "preview",
-                $"{imageId}_preview.webp");
+            var filePath = Path.Combine(_previewImagesDir, $"{imageId}_preview.webp");
 
             // If a preview exists, return its URL; otherwise, return the original image URL
             return (File.Exists(filePath))
@@ -158,10 +188,7 @@ namespace Comments.Application.Services
 
             foreach (var ext in _allowedExtensions)
             {
-                var filePath = Path.Combine(
-                    _environment.ContentRootPath,
-                    "uploads", "images", "original",
-                    $"{imageId}{ext}");
+                var filePath = Path.Combine(_originalImagesDir, $"{imageId}{ext}");
 
                 if (File.Exists(filePath))
                     return $"/uploads/images/original/{Path.GetFileName(filePath)}";
