@@ -1,7 +1,9 @@
 using Comments.Api.Middleware;
+using Comments.Application.Interfaces.Repositories;
 using Comments.Application.Interfaces.Services;
 using Comments.Application.Services;
 using Comments.Infrastructure.Data;
+using Comments.Infrastructure.Persistence.Repositories;
 using Comments.Infrastructure.Storage;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -77,9 +79,10 @@ builder.Services.AddHsts(options =>
     options.MaxAge = TimeSpan.FromDays(365);
 });
 
+builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<ICommentService, CommentService>();
-builder.Services.AddScoped<ImageService>();
-builder.Services.AddScoped<TextFileService>();
+builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddScoped<ITextFileService, TextFileService>();
 builder.Services.AddSingleton<UploadFolders>();
 
 // For development, we can use in-memory cache. For production, switch to Redis or another distributed cache
