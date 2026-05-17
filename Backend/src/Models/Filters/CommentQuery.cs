@@ -13,5 +13,7 @@ namespace Comments.Models.Filters
         public int? CursorId { get; set; }
         public DateTime? CursorCreatedAt { get; set; }
         public bool? Direction { get; set; } = true; // true for next page, false for prev page
+
+        public int PageNumber => (Skip / PageSize) + 1; // used to determine the number of cached pages
     }
 }

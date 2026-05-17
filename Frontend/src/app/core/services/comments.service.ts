@@ -15,7 +15,8 @@ export class CommentsService {
   getComments(skip: number, sortBy: string, ascending: boolean, cursorCreatedAt?: string | null, cursorId?: number | null, direction?: boolean): Observable<Comment[]> {
     let params = new HttpParams()
     .set('sortBy', sortBy)
-    .set('ascending', ascending);
+    .set('ascending', ascending)
+    .set('skip', skip);
 
     //for sorting by createdAt, we use keyset pagination
     if(sortBy === 'CreatedAt') {
@@ -26,9 +27,9 @@ export class CommentsService {
       }
        params = params.set('direction', direction ?? true); // default is true for next page, false for prev page
     }
-    else {
+    /*else {
       params = params.set('skip', skip);
-    }
+    }*/
     
     const url = `${this.apiUrl}`;
 

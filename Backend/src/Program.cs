@@ -6,6 +6,7 @@ using Comments.Infrastructure.Storage;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Filters;
+//using Microsoft.Extensions.Caching.StackExchangeRedis;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -81,7 +82,13 @@ builder.Services.AddScoped<ImageService>();
 builder.Services.AddScoped<TextFileService>();
 builder.Services.AddSingleton<UploadFolders>();
 
-builder.Services.AddMemoryCache();
+//builder.Services.AddMemoryCache();
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = "localhost:6379";
+    options.InstanceName = "CommentsApp:";
+});
 
 const string frontendCors = "frontend";
 builder.Services.AddCors(options =>

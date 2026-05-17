@@ -7,7 +7,9 @@ using Comments.Models;
 using Comments.Models.Enums;
 using Comments.Models.Filters;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using System.Text.Json;
 
 namespace Comments.Application.Services
 {
@@ -17,8 +19,9 @@ namespace Comments.Application.Services
         private readonly ImageService _imageService;
         private readonly TextFileService _textFileService;
         private readonly ILogger<CommentService> _logger;
-        private readonly IMemoryCache _cache;
-        public CommentService(CommentsDbContext dbContext, ImageService imageService, TextFileService textFileService, ILogger<CommentService> logger, IMemoryCache cache)
+        //private readonly IMemoryCache _cache;
+        private readonly IDistributedCache _cache;
+        public CommentService(CommentsDbContext dbContext, ImageService imageService, TextFileService textFileService, ILogger<CommentService> logger, IDistributedCache cache)
         {
             _dbContext = dbContext;
             _imageService = imageService;
@@ -110,22 +113,59 @@ namespace Comments.Application.Services
                 bool isCacheable =
                     parentId == null &&
                     commentQuery.SortBy == CommentSortField.createdAt &&
-                    commentQuery.Ascending == true;
+                    commentQuery.Ascending == true &&
+                    commentQuery.PageNumber <= 3; // limit caching to the first 3 pages
 
                 if (isCacheable)
                 {
-                    var cacheKey = $"comments:root:createdAt:asc:{commentQuery.CursorCreatedAt}:{commentQuery.CursorId}";
+                    var cacheKey = $"comments:page:{commentQuery.PageNumber}";
 
+                    var cachedJson =
+                        await _cache.GetStringAsync(cacheKey, cancellationToken);
 
-                    var cachedResult = await _cache.GetOrCreateAsync(cacheKey, async entry =>
+                    if (cachedJson != null)
                     {
-                        entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(10);
+                        _logger.LogInformation($"CACHE HIT: {cacheKey}");
 
-                        var data = await GetCommentsKeysetAsync(commentQuery, cancellationToken, parentId);
-                        return data ?? new List<CommentResponse>();
-                    });
+                        var cached = JsonSerializer.Deserialize<List<CommentResponse>>(cachedJson);
 
-                    return cachedResult ?? new List<CommentResponse>();
+                        return cached ?? [];
+                    }
+
+                    _logger.LogInformation($"CACHE MISS: {cacheKey} - loading from DB");
+
+                    var result = await GetCommentsKeysetAsync(commentQuery, cancellationToken, parentId);
+
+                    var serialized = JsonSerializer.Serialize(result);
+
+                    await _cache.SetStringAsync(
+                        cacheKey,
+                        serialized,
+                        new DistributedCacheEntryOptions
+                        {
+                            AbsoluteExpirationRelativeToNow =
+                                TimeSpan.FromSeconds(20)
+                        },
+                        cancellationToken);
+
+                    return result;
+
+                    /*----- In-memory caching version -----*/
+
+                    /*var cacheKey = $"comments:page:{commentQuery.PageNumber}";
+
+                    if (_cache.TryGetValue(cacheKey, out List<CommentResponse>? cached))
+                    {
+                        _logger.LogInformation("CACHE USING: {CacheKey}", cacheKey);
+                        return cached ?? [];
+                    }
+
+                    _logger.LogInformation("CACHE MISS: {CacheKey} → loading from DB", cacheKey);
+
+                    var result = await GetCommentsKeysetAsync(commentQuery, cancellationToken, parentId);
+                    _cache.Set(cacheKey, result, TimeSpan.FromSeconds(10));
+
+                    return result;*/
                 }
                 // for non-cacheable requests, for sorting by DESC order
                 else
