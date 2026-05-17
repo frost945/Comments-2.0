@@ -1,12 +1,11 @@
-﻿using Comments.Application.Interfaces.Services;
+﻿using Comments.Application.Interfaces.Repositories;
+using Comments.Application.Interfaces.Services;
 using Comments.Application.Mappers;
 using Comments.Contracts;
-using Comments.Infrastructure.Data;
 using Comments.Infrastructure.Logging;
 using Comments.Models;
 using Comments.Models.Enums;
 using Comments.Models.Filters;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
 
@@ -14,15 +13,17 @@ namespace Comments.Application.Services
 {
     public class CommentService : ICommentService
     {
-        private readonly CommentsDbContext _dbContext;
-        private readonly ImageService _imageService;
-        private readonly TextFileService _textFileService;
+        private readonly ICommentRepository _commentRepository;
+        private readonly IImageService _imageService;
+        private readonly ITextFileService _textFileService;
         private readonly ILogger<CommentService> _logger;
-        //private readonly IMemoryCache _cache;
         private readonly IDistributedCache _cache;
-        public CommentService(CommentsDbContext dbContext, ImageService imageService, TextFileService textFileService, ILogger<CommentService> logger, IDistributedCache cache)
+
+        private static bool _redisAvailable = true;
+        private static DateTime? _redisDisabledUntil = null;
+        public CommentService(ICommentRepository commentRepository, IImageService imageService, ITextFileService textFileService, ILogger<CommentService> logger, IDistributedCache cache)
         {
-            _dbContext = dbContext;
+            _commentRepository = commentRepository;
             _imageService = imageService;
             _textFileService = textFileService;
             _logger = logger;
@@ -33,7 +34,7 @@ namespace Comments.Application.Services
         {
             if (request.ParentId.HasValue)
             {
-                bool isParentId = await _dbContext.Comments.AnyAsync(c => c.Id == request.ParentId, cancellationToken);
+                bool isParentId = await _commentRepository.ParentExistsAsync(request.ParentId.Value, cancellationToken);
                 if (!isParentId)
                 {
                     throw new KeyNotFoundException("Parent comment not found");
@@ -86,9 +87,7 @@ namespace Comments.Application.Services
                 originalTextFileName
             );
 
-
-            _dbContext.Add(comment);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await _commentRepository.AddAsync(comment, cancellationToken);
 
             var imagePreviewUrl = _imageService.GetImagePreviewUrl(comment.ImageId);
             var imageOriginalUrl = _imageService.GetImageOriginalUrl(comment.ImageId);
@@ -107,131 +106,23 @@ namespace Comments.Application.Services
 
         public async Task<List<CommentResponse>> GetCommentsAsync(CommentQuery commentQuery, CancellationToken cancellationToken, int? parentId = null)
         {
-            // for createdAt - using keyset pagination
-            if (commentQuery.SortBy == CommentSortField.createdAt)
+            bool useKeyset = commentQuery.SortBy == CommentSortField.createdAt;
+
+            // cache only default page comments with sorting by createdAt in ASC order, without parentId ( for root comments)
+            bool isCacheable =
+                useKeyset &&
+                parentId == null &&
+                commentQuery.Ascending == true &&
+                commentQuery.PageNumber <= 3; // limit caching to the first 3 pages
+
+            if (isCacheable)
             {
-                // cache only default page comments with sorting by createdAt in ASC order, without parentId (root comments)
-                bool isCacheable =
-                    parentId == null &&
-                    commentQuery.SortBy == CommentSortField.createdAt &&
-                    commentQuery.Ascending == true &&
-                    commentQuery.PageNumber <= 3; // limit caching to the first 3 pages
-
-                if (isCacheable)
-                {
-                    var cacheKey = $"comments:page:{commentQuery.PageNumber}";
-
-                    string? cachedJson = null;
-
-                    try
-                    {
-                        cachedJson = await _cache.GetStringAsync(cacheKey, cancellationToken);
-                    }
-
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Redis GET failed for key: {CacheKey}", cacheKey);
-                    }
-
-                    if (cachedJson != null)
-                    {
-                        _logger.LogInformation("CACHE HIT: {CacheKey}", cacheKey);
-
-                        var cached = JsonSerializer.Deserialize<List<CommentResponse>>(cachedJson);
-
-                        return cached ?? [];
-                    }
-
-                    _logger.LogInformation("CACHE MISS: {CacheKey} - loading from DB", cacheKey);
-
-                    var result = await GetCommentsKeysetAsync(commentQuery, cancellationToken, parentId);
-
-                    try
-                    {
-                        var serialized = JsonSerializer.Serialize(result);
-
-                        await _cache.SetStringAsync(
-                            cacheKey,
-                            serialized,
-                            new DistributedCacheEntryOptions
-                            {
-                                AbsoluteExpirationRelativeToNow =
-                                    TimeSpan.FromSeconds(20)
-                            },
-                            cancellationToken);
-
-                        return result;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Redis SET failed for key: {CacheKey}", cacheKey);
-                       // return result; // return DB result even if caching fails
-                    }
-
-                    /*----- In-memory caching version -----*/
-
-                    /*var cacheKey = $"comments:page:{commentQuery.PageNumber}";
-
-                    if (_cache.TryGetValue(cacheKey, out List<CommentResponse>? cached))
-                    {
-                        _logger.LogInformation("CACHE USING: {CacheKey}", cacheKey);
-                        return cached ?? [];
-                    }
-
-                    _logger.LogInformation("CACHE MISS: {CacheKey} → loading from DB", cacheKey);
-
-                    var result = await GetCommentsKeysetAsync(commentQuery, cancellationToken, parentId);
-                    _cache.Set(cacheKey, result, TimeSpan.FromSeconds(10));
-
-                    return result;*/
-                }
-                // for non-cacheable requests, for sorting by DESC order
-                else
-                {
-                    return await GetCommentsKeysetAsync(commentQuery, cancellationToken, parentId);
-                }
+                return await GetCachedCommentsAsync(commentQuery, cancellationToken);
             }
-           
-            var comments = _dbContext.Comments
-                .AsNoTracking()
-                .AsQueryable();
 
-            // filter by parentId (null for parent comments, or specific parentId for replies)
-            comments = parentId == null
-                ? comments.Where(c => c.ParentId == null)
-                : comments.Where(c => c.ParentId == parentId);
-
-            // sorting use OFFSET pagination
-            comments = commentQuery.SortBy switch
-            {
-                CommentSortField.userName => commentQuery.Ascending
-                    ? comments.OrderBy(c => c.UserName)
-                    : comments.OrderByDescending(c => c.UserName),
-
-                CommentSortField.email => commentQuery.Ascending
-                    ? comments.OrderBy(c => c.Email)
-                    : comments.OrderByDescending(c => c.Email),
-
-                    _ => comments.OrderBy(c => c.CreatedAt) //как заглушка, т.к. сортировка по несуществующему полю уже проверяется на уровне контроллера
-            };
-
-            var rawComments = await comments
-                .Skip(commentQuery.Skip)
-                .Take(commentQuery.PageSize)
-                .Select(c => new CommentRawDto
-                {
-                    Id = c.Id,
-                    UserName = c.UserName,
-                    Text = c.Text,
-                    CreatedAt = c.CreatedAt,
-                    ImageId = c.ImageId,
-                    TextFileId = c.TextFileId,
-                    OriginalTextFileName = c.OriginalTextFileName,
-                    ReplyCount = parentId==null
-                    ? c.Children.Count
-                    : 0 // count the number of replies only for parent comments
-                })
-                .ToListAsync(cancellationToken);
+            var rawComments = useKeyset
+                ? await _commentRepository.GetListKeysetAsync(commentQuery, cancellationToken, parentId)
+                : await _commentRepository.GetListOffsetAsync(commentQuery, cancellationToken, parentId);
 
             var commentsResponse = rawComments
             .Select(c => CommentMapper.FromRaw(
@@ -245,20 +136,7 @@ namespace Comments.Application.Services
 
         public async Task<CommentResponse> GetCommentById(int id, CancellationToken cancellationToken)
         {
-            var rawComment = await _dbContext.Comments
-                .Where(c => c.Id == id)
-                .Select(c => new CommentRawDto
-                {
-                    Id = c.Id,
-                    UserName = c.UserName,
-                    Text = c.Text,
-                    CreatedAt = c.CreatedAt,
-                    ImageId = c.ImageId,
-                    TextFileId = c.TextFileId,
-                    OriginalTextFileName = c.OriginalTextFileName,
-                   ReplyCount = c.Children.Count
-                })
-                .FirstOrDefaultAsync(cancellationToken);
+            var rawComment = await _commentRepository.GetByIdAsync(id, cancellationToken);
 
             if (rawComment == null)
                 throw new KeyNotFoundException($"Comment for id: {id} not found");
@@ -271,103 +149,82 @@ namespace Comments.Application.Services
             return commentResponse;
         }
 
-        // implement Keyset pagination only for field  - createdAt
-        private async Task<List<CommentResponse>> GetCommentsKeysetAsync(CommentQuery commentQuery, CancellationToken cancellationToken, int? parentId = null)
+        private async Task<List<CommentResponse>> GetCachedCommentsAsync(CommentQuery commentQuery, CancellationToken cancellationToken)
         {
-            var comments = _dbContext.Comments
-                .AsNoTracking()
-                .AsQueryable();
-
-            // filter by parentId (null for parent comments, or specific parentId for replies)
-            comments = parentId == null
-                ? comments.Where(c => c.ParentId == null)
-                : comments.Where(c => c.ParentId == parentId);
-
-            if (commentQuery.CursorCreatedAt != null && commentQuery.CursorId != null)
-            {   
-                //move next page
-                if (commentQuery.Direction == true)
-                {
-                    if(commentQuery.Ascending)
-                    {
-                        comments = comments.Where(c =>
-                        c.CreatedAt > commentQuery.CursorCreatedAt ||
-                        (c.CreatedAt == commentQuery.CursorCreatedAt && c.Id > commentQuery.CursorId));
-
-                        comments = comments.OrderBy(c => c.CreatedAt).ThenBy(c => c.Id);
-                    }
-                    else
-                    {
-                        comments = comments.Where(c =>
-                        c.CreatedAt < commentQuery.CursorCreatedAt ||
-                        (c.CreatedAt == commentQuery.CursorCreatedAt && c.Id < commentQuery.CursorId));
-
-                        comments =  comments.OrderByDescending(c => c.CreatedAt).ThenByDescending(c => c.Id);
-                    }
-                }
-                //move previous page
-                else
-                {
-                    if(commentQuery.Ascending)
-                    {
-                        comments = comments.Where(c =>
-                        c.CreatedAt < commentQuery.CursorCreatedAt ||
-                        (c.CreatedAt == commentQuery.CursorCreatedAt && c.Id < commentQuery.CursorId));
-
-                        comments = comments.OrderByDescending(c => c.CreatedAt).ThenByDescending(c => c.Id)
-                        .Take(commentQuery.PageSize);
-
-                        // возвращаем порядок под UI
-                        comments = comments.OrderBy(c => c.CreatedAt).ThenBy(c => c.Id);
-                    }
-                    else
-                    {
-                        comments = comments.Where(c =>
-                        c.CreatedAt > commentQuery.CursorCreatedAt ||
-                        (c.CreatedAt == commentQuery.CursorCreatedAt && c.Id > commentQuery.CursorId));
-
-                        comments = comments.OrderBy(c => c.CreatedAt).ThenBy(c => c.Id)
-                        .Take(commentQuery.PageSize);
-
-                        // возвращаем порядок под UI
-                        comments = comments.OrderByDescending(c => c.CreatedAt).ThenByDescending(c => c.Id);
-                    }
-                }
-            }
-            // On the first page, we sort by the createdAt and Id. For other pages,  will be using keyset pagination
-            else
+            //Redis availability check - every 30 seconds, if Redis is unavailable, immediately load from the DB until the lock time expires
+            if (_redisAvailable || DateTime.UtcNow >= _redisDisabledUntil)
             {
-                Console.WriteLine("First page or no cursor provided, using default sorting");
-                comments = commentQuery.Ascending
-                    ? comments.OrderBy(c => c.CreatedAt).ThenBy(c => c.Id)
-                    : comments.OrderByDescending(c => c.CreatedAt).ThenByDescending(c => c.Id);
+                var cacheKey = $"comments:page:{commentQuery.PageNumber}";
+
+                try
+                {
+                    var cachedJson = await _cache.GetStringAsync(cacheKey, cancellationToken);
+
+                    if (cachedJson != null)
+                    {
+                        _logger.LogInformation("CACHE HIT: {CacheKey}", cacheKey);
+
+                        var cached = JsonSerializer.Deserialize<List<CommentResponse>>(cachedJson);
+
+                        if (cached != null)
+                            return cached;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _redisAvailable = false;
+                    _redisDisabledUntil = DateTime.UtcNow.AddSeconds(30);
+
+                    _logger.LogWarning(ex, "Redis GET failed for key: {CacheKey}", cacheKey);
+                }
+
+                _logger.LogInformation("CACHE MISS: {CacheKey} - loading from DB", cacheKey);
+
+                var rawComments = await _commentRepository.GetListKeysetAsync(commentQuery, cancellationToken);
+
+                var commentsResponse = rawComments
+                    .Select(c => CommentMapper.FromRaw(
+                        c,
+                        _imageService.GetImagePreviewUrl(c.ImageId),
+                        _imageService.GetImageOriginalUrl(c.ImageId)))
+                    .ToList();
+
+                try
+                {
+                    var serialized = JsonSerializer.Serialize(commentsResponse);
+
+                    await _cache.SetStringAsync(
+                        cacheKey,
+                        serialized,
+                        new DistributedCacheEntryOptions
+                        {
+                            AbsoluteExpirationRelativeToNow =
+                                TimeSpan.FromSeconds(20)
+                        },
+                        cancellationToken);
+
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Redis SET failed for key: {CacheKey}", cacheKey);
+                }
+
+                return commentsResponse;
             }
 
-            var rawComments = await comments
-                .Take(commentQuery.PageSize)
-                .Select(c => new CommentRawDto
-                {
-                    Id = c.Id,
-                    UserName = c.UserName,
-                    Text = c.Text,
-                    CreatedAt = c.CreatedAt,
-                    ImageId = c.ImageId,
-                    TextFileId = c.TextFileId,
-                    OriginalTextFileName = c.OriginalTextFileName,
-                    ReplyCount = parentId == null
-                    ? c.Children.Count
-                    : 0 // count the number of replies only for parent comments
-                })
-                .ToListAsync(cancellationToken);
+            _logger.LogInformation("Redis unavailable until {UnavailableUntil}, loading from DB", _redisDisabledUntil);
 
-            var commentsResponse = rawComments
-            .Select(c => CommentMapper.FromRaw(
-                c,
-                _imageService.GetImagePreviewUrl(c.ImageId),
-                _imageService.GetImageOriginalUrl(c.ImageId)))
-            .ToList();
+            // fallback to DB, if Redis is unavailable 
+            var fallbackRawComments = await _commentRepository.GetListKeysetAsync(commentQuery, cancellationToken);
 
-            return commentsResponse;
+            var fallbackcommentsResponse = fallbackRawComments
+                .Select(c => CommentMapper.FromRaw(
+                    c,
+                    _imageService.GetImagePreviewUrl(c.ImageId),
+                    _imageService.GetImageOriginalUrl(c.ImageId)))
+                .ToList();
+
+            return fallbackcommentsResponse;
         }
 
         private FileType DetectFile(IFormFile file)
