@@ -6,7 +6,7 @@ using Comments.Infrastructure.Storage;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Filters;
-//using Microsoft.Extensions.Caching.StackExchangeRedis;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -82,11 +82,20 @@ builder.Services.AddScoped<ImageService>();
 builder.Services.AddScoped<TextFileService>();
 builder.Services.AddSingleton<UploadFolders>();
 
+// For development, we can use in-memory cache. For production, switch to Redis or another distributed cache
 //builder.Services.AddMemoryCache();
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = "localhost:6379";
+    options.ConfigurationOptions = new ConfigurationOptions
+    {
+        EndPoints = { "localhost:6379" },
+        AbortOnConnectFail = false,
+        ConnectRetry = 0,
+        ConnectTimeout = 200,
+        SyncTimeout = 200,
+        AsyncTimeout = 200
+    };
     options.InstanceName = "CommentsApp:";
 });
 

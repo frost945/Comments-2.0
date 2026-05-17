@@ -8,7 +8,6 @@ using Comments.Models.Enums;
 using Comments.Models.Filters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
 using System.Text.Json;
 
 namespace Comments.Application.Services
@@ -120,35 +119,52 @@ namespace Comments.Application.Services
                 {
                     var cacheKey = $"comments:page:{commentQuery.PageNumber}";
 
-                    var cachedJson =
-                        await _cache.GetStringAsync(cacheKey, cancellationToken);
+                    string? cachedJson = null;
+
+                    try
+                    {
+                        cachedJson = await _cache.GetStringAsync(cacheKey, cancellationToken);
+                    }
+
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Redis GET failed for key: {CacheKey}", cacheKey);
+                    }
 
                     if (cachedJson != null)
                     {
-                        _logger.LogInformation($"CACHE HIT: {cacheKey}");
+                        _logger.LogInformation("CACHE HIT: {CacheKey}", cacheKey);
 
                         var cached = JsonSerializer.Deserialize<List<CommentResponse>>(cachedJson);
 
                         return cached ?? [];
                     }
 
-                    _logger.LogInformation($"CACHE MISS: {cacheKey} - loading from DB");
+                    _logger.LogInformation("CACHE MISS: {CacheKey} - loading from DB", cacheKey);
 
                     var result = await GetCommentsKeysetAsync(commentQuery, cancellationToken, parentId);
 
-                    var serialized = JsonSerializer.Serialize(result);
+                    try
+                    {
+                        var serialized = JsonSerializer.Serialize(result);
 
-                    await _cache.SetStringAsync(
-                        cacheKey,
-                        serialized,
-                        new DistributedCacheEntryOptions
-                        {
-                            AbsoluteExpirationRelativeToNow =
-                                TimeSpan.FromSeconds(20)
-                        },
-                        cancellationToken);
+                        await _cache.SetStringAsync(
+                            cacheKey,
+                            serialized,
+                            new DistributedCacheEntryOptions
+                            {
+                                AbsoluteExpirationRelativeToNow =
+                                    TimeSpan.FromSeconds(20)
+                            },
+                            cancellationToken);
 
-                    return result;
+                        return result;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Redis SET failed for key: {CacheKey}", cacheKey);
+                       // return result; // return DB result even if caching fails
+                    }
 
                     /*----- In-memory caching version -----*/
 
