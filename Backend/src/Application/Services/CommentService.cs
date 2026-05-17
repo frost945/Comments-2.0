@@ -1,4 +1,4 @@
-﻿using Comments.Application.Interfaces;
+﻿using Comments.Application.Interfaces.Services;
 using Comments.Application.Mappers;
 using Comments.Contracts;
 using Comments.Infrastructure.Data;
@@ -70,9 +70,11 @@ namespace Comments.Application.Services
             }
 
             // Sanitize request fields
-            var cleanText = InputSanitizationService.SanitizeComment(request.Text);
-            var cleanUserName = InputSanitizationService.SanitizeUsername(request.UserName);
-            var cleanEmail = InputSanitizationService.SanitizeEmail(request.Email);
+            InputSanitizationService service = new InputSanitizationService();
+
+            var cleanText = service.SanitizeComment(request.Text);
+            var cleanUserName = service.SanitizeUsername(request.UserName);
+            var cleanEmail = service.SanitizeEmail(request.Email);
 
             var comment = new Comment(
                 request.ParentId,

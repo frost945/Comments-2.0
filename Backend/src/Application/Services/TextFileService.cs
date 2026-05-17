@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Comments.Application.Interfaces.Services;
+using Microsoft.EntityFrameworkCore;
 using System.Text;
 
 namespace Comments.Application.Services
 {
-    public class TextFileService
+    public class TextFileService : ITextFileService
     {
         private readonly IWebHostEnvironment _environment;
         private readonly ILogger<TextFileService> _logger;

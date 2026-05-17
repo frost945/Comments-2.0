@@ -1,5 +1,5 @@
 using Comments.Api.Middleware;
-using Comments.Application.Interfaces;
+using Comments.Application.Interfaces.Services;
 using Comments.Application.Services;
 using Comments.Infrastructure.Data;
 using Comments.Infrastructure.Storage;

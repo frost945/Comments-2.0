@@ -1,9 +1,9 @@
-﻿using Ganss.Xss;
-using System.Net.Mail;
+﻿using Comments.Application.Interfaces.Services;
+using Ganss.Xss;
 using System.Text.RegularExpressions;
 using System.Web;
 
-public static class InputSanitizationService
+public class InputSanitizationService : IInputSanitizationService
 {
     private static readonly HtmlSanitizer _commentSanitizer = CreateSanitizer();
 
@@ -23,7 +23,7 @@ public static class InputSanitizationService
         return sanitizer;
     }
 
-    public static string SanitizeComment(string input)
+    public string SanitizeComment(string input)
     {
         if (string.IsNullOrWhiteSpace(input))
             return string.Empty;
@@ -37,7 +37,7 @@ public static class InputSanitizationService
         return sanitized;
     }
 
-    public static string SanitizeUsername(string input)
+    public string SanitizeUsername(string input)
     {
         if (string.IsNullOrWhiteSpace(input))
             return string.Empty;
@@ -56,7 +56,7 @@ public static class InputSanitizationService
         return input;
     }
 
-    public static string SanitizeEmail(string input)
+    public string SanitizeEmail(string input)
     {
         if (string.IsNullOrWhiteSpace(input))
             return string.Empty;

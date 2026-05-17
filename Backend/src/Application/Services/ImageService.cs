@@ -1,4 +1,5 @@
-﻿using SixLabors.ImageSharp;
+﻿using Comments.Application.Interfaces.Services;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Gif;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
@@ -7,7 +8,7 @@ using SixLabors.ImageSharp.Processing;
 
 namespace Comments.Application.Services
 {
-    public class ImageService
+    public class ImageService : IImageService
     {
         private readonly IWebHostEnvironment _environment;
         private readonly ILogger<ImageService> _logger;

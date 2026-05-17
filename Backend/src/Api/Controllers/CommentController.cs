@@ -1,4 +1,4 @@
-﻿using Comments.Application.Interfaces;
+﻿using Comments.Application.Interfaces.Services;
 using Comments.Contracts;
 using Comments.Models.Enums;
 using Comments.Models.Filters;

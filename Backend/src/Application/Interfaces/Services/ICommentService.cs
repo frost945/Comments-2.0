@@ -1,8 +1,7 @@
 ﻿using Comments.Contracts;
 using Comments.Models.Filters;
-using System.Threading;
 
-namespace Comments.Application.Interfaces
+namespace Comments.Application.Interfaces.Services
 {
     public interface ICommentService
     {
