@@ -108,12 +108,14 @@ namespace Comments.Application.Services
         {
             bool useKeyset = commentQuery.SortBy == CommentSortField.createdAt;
 
+            var pageNumber= (commentQuery.Skip / commentQuery.PageSize) + 1;
+
             // cache only default page comments with sorting by createdAt in ASC order, without parentId ( for root comments)
             bool isCacheable =
                 useKeyset &&
                 parentId == null &&
                 commentQuery.Ascending == true &&
-                commentQuery.PageNumber <= 3; // limit caching to the first 3 pages
+                pageNumber <= 3; // limit caching to the first 3 pages
 
             if (isCacheable)
             {
@@ -154,7 +156,9 @@ namespace Comments.Application.Services
             //Redis availability check - every 30 seconds, if Redis is unavailable, immediately load from the DB until the lock time expires
             if (_redisAvailable || DateTime.UtcNow >= _redisDisabledUntil)
             {
-                var cacheKey = $"comments:page:{commentQuery.PageNumber}";
+                var pageNumber = (commentQuery.Skip / commentQuery.PageSize) + 1;
+
+                var cacheKey = $"comments:page:{pageNumber}";
 
                 try
                 {
