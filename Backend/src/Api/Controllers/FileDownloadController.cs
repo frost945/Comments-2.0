@@ -1,4 +1,4 @@
-using Comments.Application.Services;
+using Comments.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Comments.Api.Controllers
@@ -7,9 +7,9 @@ namespace Comments.Api.Controllers
     [Route("api/files")]
     public class FileDownloadController : ControllerBase
     {
-        private readonly TextFileService _textFileService;
+        private readonly ITextFileService _textFileService;
 
-        public FileDownloadController(TextFileService textFileService, ImageService imageService)
+        public FileDownloadController(ITextFileService textFileService)
         {
             _textFileService = textFileService;
         }

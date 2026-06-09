@@ -1,6 +1,5 @@
 ﻿using Comments.Application.Interfaces.Services;
 using Comments.Contracts;
-using Comments.Models.Enums;
 using Comments.Models.Filters;
 using Microsoft.AspNetCore.Mvc;
 
