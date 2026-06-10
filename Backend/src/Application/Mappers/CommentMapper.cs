@@ -1,6 +1,5 @@
 ﻿using Comments.Contracts;
-using Comments.Models;
-using Comments.Application.Mappers;
+using Comments.Domain;
 
 namespace Comments.Application.Mappers
 {

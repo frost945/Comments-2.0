@@ -1,4 +1,4 @@
-﻿using Comments.Models;
+﻿using Comments.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

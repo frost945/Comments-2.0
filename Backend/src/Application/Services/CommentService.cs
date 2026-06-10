@@ -2,10 +2,10 @@
 using Comments.Application.Interfaces.Services;
 using Comments.Application.Mappers;
 using Comments.Contracts;
+using Comments.Contracts.Enums;
+using Comments.Contracts.Filters;
+using Comments.Domain;
 using Comments.Infrastructure.Logging;
-using Comments.Models;
-using Comments.Models.Enums;
-using Comments.Models.Filters;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
 
@@ -21,6 +21,14 @@ namespace Comments.Application.Services
 
         private static bool _redisAvailable = true;
         private static DateTime? _redisDisabledUntil = null;
+
+        private enum FileType
+        {
+            Image,
+            Text,
+            Unknown
+        }
+
         public CommentService(ICommentRepository commentRepository, IImageService imageService, ITextFileService textFileService, ILogger<CommentService> logger, IDistributedCache cache)
         {
             _commentRepository = commentRepository;

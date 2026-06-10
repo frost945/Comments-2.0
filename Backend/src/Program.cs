@@ -138,7 +138,7 @@ app.Use(async (context, next) =>
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Project_Comments v1"));
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Project_Comments v2"));
 
     // In development, remove CSP to allow Swagger UI to function properly
     app.Use(async (context, next) =>
@@ -161,11 +161,13 @@ using (var scope = app.Services.CreateScope())
     if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
         db.Database.Migrate();
 
-    Console.WriteLine("DB Connection: " + db.Database.CanConnect());
+    Log.Information(
+     "DB Connection: {Connection}",
+     await db.Database.CanConnectAsync());
 }
 
 app.MapControllers();
 
-app.MapGet("/health", () => Results.Ok(new { status = "Healthy" })).WithTags("Health");
+app.MapGet("/ping", () => Results.Ok(new { status = "pong" }));
 
 app.Run();

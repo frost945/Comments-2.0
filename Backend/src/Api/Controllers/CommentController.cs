@@ -1,6 +1,6 @@
 ﻿using Comments.Application.Interfaces.Services;
 using Comments.Contracts;
-using Comments.Models.Filters;
+using Comments.Contracts.Filters;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Comments.Api.Controllers

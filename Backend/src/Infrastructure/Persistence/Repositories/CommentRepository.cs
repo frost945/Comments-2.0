@@ -1,9 +1,9 @@
 ﻿using Comments.Application.Interfaces.Repositories;
 using Comments.Application.Mappers;
+using Comments.Contracts.Enums;
+using Comments.Contracts.Filters;
+using Comments.Domain;
 using Comments.Infrastructure.Data;
-using Comments.Models;
-using Comments.Models.Enums;
-using Comments.Models.Filters;
 using Microsoft.EntityFrameworkCore;
 
 namespace Comments.Infrastructure.Persistence.Repositories

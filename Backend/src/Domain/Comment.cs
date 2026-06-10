@@ -1,6 +1,6 @@
 ﻿using System.Net.Mail;
 
-namespace Comments.Models
+namespace Comments.Domain
 {
     public class Comment
     {

@@ -1,5 +1,5 @@
 ﻿using Comments.Contracts;
-using Comments.Models.Filters;
+using Comments.Contracts.Filters;
 
 namespace Comments.Application.Interfaces.Services
 {

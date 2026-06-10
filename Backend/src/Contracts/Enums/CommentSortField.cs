@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Comments.Models.Enums
+namespace Comments.Contracts.Enums
 {
     public enum CommentSortField
     {

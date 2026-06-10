@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Comments.Models;
+using Comments.Domain;
 using Comments.Infrastructure.Configurations;
 
 namespace Comments.Infrastructure.Data
