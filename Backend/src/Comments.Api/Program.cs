@@ -11,41 +11,11 @@ using Comments.Infrastructure.Logging;
 using Comments.Infrastructure.Persistence.Repositories;
 using Comments.Infrastructure.Storage;
 using Serilog;
-using Serilog.Filters;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder();
 
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .Enrich.FromLogContext()
-
-      // Audit logs  (file only)
-      .WriteTo.Logger(audit => audit
-          .MinimumLevel.Information() // Audit logs are always Information level
-          .Filter.ByIncludingOnly(Matching.WithProperty("AuditUser"))
-          .WriteTo.Async(a => a.File(
-              "logs/audit-user-.txt",
-              rollingInterval: RollingInterval.Day,
-              buffered: false)) //for production, to set buffered: true
-                                //for dev, to set buffered: false, to display logs immediately
-      )
-
-    // Technical logs (console and file), excluding audit
-    // Log level is taken from configuration file appsettings.json
-    .WriteTo.Logger(tech => tech
-        .Filter.ByExcluding(Matching.WithProperty("AuditUser"))
-        .Filter.ByExcluding(logEvent => // to avoid duplication of logs
-            logEvent.MessageTemplate.Text.Contains("An unhandled exception has occurred"))
-        .WriteTo.Async(a => a.File(
-            "logs/log-.txt",
-            rollingInterval: RollingInterval.Day,
-            buffered: true))
-        .WriteTo.Console()
-    )
-
-    .CreateLogger();
-
+builder.ConfigureSerilog();
 builder.Host.UseSerilog();
 
 builder.Services.AddCommentsDbContext(builder.Configuration);
@@ -56,11 +26,23 @@ builder.Services.Configure<StorageOptions>(
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
-builder.Services.AddSwaggerGen();
-
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+});
+
+builder.Services.AddSwaggerGen();
+
+const string frontendCors = "frontend";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(frontendCors, policy =>
+    {
+        policy
+        .WithOrigins("http://localhost:4200")
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
 });
 
 builder.Services.AddAntiforgery(options =>
@@ -74,20 +56,6 @@ builder.Services.AddHsts(options =>
     options.IncludeSubDomains = true;
     options.MaxAge = TimeSpan.FromDays(365);
 });
-
-builder.Services.AddScoped<ICommentRepository, CommentRepository>();
-builder.Services.AddScoped<ICommentService, CommentService>();
-builder.Services.AddScoped<IImageService, ImageService>();
-builder.Services.AddScoped<ITextFileService, TextFileService>();
-
-builder.Services.AddScoped<IImageStorage, LocalImageStorage>();
-builder.Services.AddScoped<ITextFileStorage, TextFileStorage>();
-builder.Services.AddSingleton<StoragePathProvider>();
-
-builder.Services.AddSingleton<IAuditLogger, AuditLogger>();
-
-builder.Services.AddScoped<CommentResponseMapper>();
-builder.Services.AddSingleton<ImageUrlBuilder>();
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
@@ -103,24 +71,35 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.InstanceName = "CommentsApp:";
 });
 
-const string frontendCors = "frontend";
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(frontendCors, policy =>
-    {
-        policy
-        .WithOrigins("http://localhost:4200")
-        .AllowAnyHeader()
-        .AllowAnyMethod();
-    });
-});
+// Application
+builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddScoped<ITextFileService, TextFileService>();
+
+// Infrastructure
+builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+builder.Services.AddScoped<IImageStorage, LocalImageStorage>();
+builder.Services.AddScoped<ITextFileStorage, TextFileStorage>();
+
+builder.Services.AddSingleton<StoragePathProvider>();
+builder.Services.AddSingleton<IAuditLogger, AuditLogger>();
+
+// API
+builder.Services.AddScoped<CommentResponseMapper>();
+builder.Services.AddSingleton<ImageUrlBuilder>();
 
 var app = builder.Build();
 
+await app.MigrateDatabaseAsync();
+
 app.UseExceptionHandler();
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment() || !app.Environment.IsEnvironment("Docker"))
+{
+    app.UseHsts();
+}
 
+app.UseHttpsRedirection();
 app.UseCors(frontendCors);
 
 app.Use(async (context, next) =>
@@ -150,8 +129,6 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
 }
 
 app.UseUploads();
-
-await app.MigrateDatabaseAsync();
 
 app.MapControllers();
 
