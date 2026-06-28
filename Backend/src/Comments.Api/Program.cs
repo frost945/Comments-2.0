@@ -10,7 +10,6 @@ using Comments.Infrastructure.Data;
 using Comments.Infrastructure.Logging;
 using Comments.Infrastructure.Persistence.Repositories;
 using Comments.Infrastructure.Storage;
-using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Filters;
 using StackExchange.Redis;
@@ -49,18 +48,7 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-builder.Services.AddDbContext<CommentsDbContext>(options => 
-{
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
-        sqlOptions =>
-        {
-            sqlOptions.EnableRetryOnFailure(
-                maxRetryCount: 5,
-                maxRetryDelay: TimeSpan.FromSeconds(10),
-                errorNumbersToAdd: null);
-        }
-    );
-});
+builder.Services.AddCommentsDbContext(builder.Configuration);
 
 builder.Services.Configure<StorageOptions>(
     builder.Configuration.GetSection("Storage"));
@@ -163,21 +151,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
 
 app.UseUploads();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<CommentsDbContext>();
-
-    // For development purposes only: reset database
-    //  db.Database.EnsureDeleted();
-    // db.Database.EnsureCreated();
-
-    if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
-        db.Database.Migrate();
-
-    Log.Information(
-     "DB Connection: {Connection}",
-     await db.Database.CanConnectAsync());
-}
+await app.MigrateDatabaseAsync();
 
 app.MapControllers();
 
