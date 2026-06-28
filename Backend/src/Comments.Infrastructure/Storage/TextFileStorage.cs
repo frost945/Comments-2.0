@@ -1,19 +1,14 @@
 ﻿using Comments.Application.Interfaces.FileStorage;
-using Microsoft.Extensions.Configuration;
 
 namespace Comments.Infrastructure.Storage
 {
     public class TextFileStorage : ITextFileStorage
     {
-        private readonly IConfiguration _config;
         private readonly string _textFilesDirectory;
 
-        public TextFileStorage(IConfiguration config)
+        public TextFileStorage(StoragePathProvider paths)
         {
-            _config = config;
-
-            _textFilesDirectory = _config["Storage:TextFilesPath"]
-                ?? throw new InvalidOperationException("Storage path is not configured.");
+            _textFilesDirectory = paths.TextFilesPath;
         }
 
         public async Task SaveAsync(Stream stream, string fileName, CancellationToken ct)

@@ -62,6 +62,9 @@ builder.Services.AddDbContext<CommentsDbContext>(options =>
     );
 });
 
+builder.Services.Configure<StorageOptions>(
+    builder.Configuration.GetSection("Storage"));
+
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
@@ -91,12 +94,12 @@ builder.Services.AddScoped<ITextFileService, TextFileService>();
 
 builder.Services.AddScoped<IImageStorage, LocalImageStorage>();
 builder.Services.AddScoped<ITextFileStorage, TextFileStorage>();
+builder.Services.AddSingleton<StoragePathProvider>();
 
-builder.Services.AddScoped<IAuditLogger, AuditLogger>();
-builder.Services.AddSingleton<UploadFolders>();
+builder.Services.AddSingleton<IAuditLogger, AuditLogger>();
 
 builder.Services.AddScoped<CommentResponseMapper>();
-builder.Services.AddScoped<ImageUrlBuilder>();
+builder.Services.AddSingleton<ImageUrlBuilder>();
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {

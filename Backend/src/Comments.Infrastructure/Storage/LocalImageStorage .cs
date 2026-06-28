@@ -1,20 +1,17 @@
 ﻿using Comments.Application.Interfaces.FileStorage;
-using Microsoft.Extensions.Configuration;
 
 namespace Comments.Infrastructure.Storage
 {
     public class LocalImageStorage : IImageStorage
     {
-        private readonly IConfiguration _config;
         private readonly string _originalImagesDir;
         private readonly string _previewImagesDir;
         private readonly string[] _allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
 
-        public LocalImageStorage(IConfiguration config)
+        public LocalImageStorage(StoragePathProvider path)
         {
-            _config = config;
-            _originalImagesDir = _config["Storage:Images:OriginalPath"] ?? throw new InvalidOperationException("Storage path is not configured.");
-            _previewImagesDir = _config["Storage:Images:PreviewPath"] ?? throw new InvalidOperationException("Storage path is not configured.");
+            _originalImagesDir = path.OriginalImagesPath;
+            _previewImagesDir = path.PreviewImagesPath;
         }
 
         public async Task SaveOriginalAsync(Stream stream, string fileName, CancellationToken ct)
