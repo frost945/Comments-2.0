@@ -3,8 +3,6 @@ using Comments.Application.Interfaces.Repositories;
 using Comments.Application.Interfaces.Services;
 using Comments.Application.Dtos;
 using Comments.Contracts;
-using Comments.Contracts.Enums;
-using Comments.Contracts.Filters;
 using Comments.Domain.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
@@ -12,6 +10,8 @@ using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using Comments.Application.Mappings;
 using Comments.Application.Interfaces.Sanitization;
+using Comments.Application.Requests;
+using Comments.Application.Requests.Enums;
 
 namespace Comments.Application.Services
 {

@@ -1,4 +1,4 @@
-﻿using Comments.Contracts.Filters;
+﻿using Comments.Application.Requests;
 using Comments.Domain.Models;
 
 namespace Comments.Application.Interfaces.Repositories

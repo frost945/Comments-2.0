@@ -1,6 +1,6 @@
 ﻿using Comments.Application.Dtos;
+using Comments.Application.Requests;
 using Comments.Contracts;
-using Comments.Contracts.Filters;
 using Microsoft.AspNetCore.Http;
 
 namespace Comments.Application.Interfaces.Services

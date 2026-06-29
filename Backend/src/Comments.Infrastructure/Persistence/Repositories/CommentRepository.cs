@@ -1,6 +1,6 @@
 ﻿using Comments.Application.Interfaces.Repositories;
-using Comments.Contracts.Enums;
-using Comments.Contracts.Filters;
+using Comments.Application.Requests;
+using Comments.Application.Requests.Enums;
 using Comments.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 

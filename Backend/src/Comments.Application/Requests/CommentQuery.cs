@@ -1,6 +1,6 @@
-﻿using Comments.Contracts.Enums;
+﻿using Comments.Application.Requests.Enums;
 
-namespace Comments.Contracts.Filters
+namespace Comments.Application.Requests
 {
     public class CommentQuery
     {

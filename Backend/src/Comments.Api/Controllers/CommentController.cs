@@ -1,7 +1,7 @@
 ﻿using Comments.Api.Mappers;
 using Comments.Application.Interfaces.Services;
+using Comments.Application.Requests;
 using Comments.Contracts;
-using Comments.Contracts.Filters;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Comments.Api.Controllers
