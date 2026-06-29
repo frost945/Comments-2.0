@@ -6,8 +6,8 @@ using Comments.Application.Interfaces.Logging;
 using Comments.Application.Interfaces.Repositories;
 using Comments.Application.Interfaces.Services;
 using Comments.Application.Services;
-using Comments.Infrastructure.Data;
 using Comments.Infrastructure.Logging;
+using Comments.Infrastructure.Persistence.Extensions;
 using Comments.Infrastructure.Persistence.Repositories;
 using Comments.Infrastructure.Storage;
 using Serilog;
@@ -90,7 +90,7 @@ builder.Services.AddSingleton<ImageUrlBuilder>();
 
 var app = builder.Build();
 
-await app.MigrateDatabaseAsync();
+await app.ApplyMigrationsAsync();
 
 app.UseExceptionHandler();
 

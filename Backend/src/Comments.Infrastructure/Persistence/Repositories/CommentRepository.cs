@@ -3,7 +3,6 @@ using Comments.Application.Mappers;
 using Comments.Contracts.Enums;
 using Comments.Contracts.Filters;
 using Comments.Domain.Models;
-using Comments.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Comments.Infrastructure.Persistence.Repositories

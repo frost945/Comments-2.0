@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Comments.Infrastructure.Configurations
+namespace Comments.Infrastructure.Persistence.Configurations
 {
     public class CommentConfiguration : IEntityTypeConfiguration<Comment>
     {

@@ -1,8 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Comments.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Comments.Infrastructure.Data
+namespace Comments.Infrastructure.Persistence.Extensions
 {
     public static class DbContextExtensions
     {

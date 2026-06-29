@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Comments.Infrastructure.Configurations;
 using Comments.Domain.Models;
+using Comments.Infrastructure.Persistence.Configurations;
 
-namespace Comments.Infrastructure.Data
+namespace Comments.Infrastructure.Persistence
 {
     public class CommentsDbContext : DbContext
     {
