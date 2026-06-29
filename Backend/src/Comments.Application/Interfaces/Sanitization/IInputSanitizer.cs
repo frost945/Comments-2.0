@@ -1,6 +1,6 @@
-﻿namespace Comments.Application.Interfaces.Services
+﻿namespace Comments.Application.Interfaces.Sanitization
 {
-    public interface IInputSanitizationService
+    public interface IInputSanitizer
     {
         string SanitizeComment(string input);
         string SanitizeUsername(string input);

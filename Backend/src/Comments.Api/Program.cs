@@ -13,6 +13,8 @@ using Comments.Infrastructure.Storage;
 using Serilog;
 using StackExchange.Redis;
 using Comments.Infrastructure.ImageProcessing;
+using Comments.Application.Interfaces.ImageProcessing;
+using Comments.Application.Interfaces.Sanitization;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -85,6 +87,7 @@ builder.Services.AddScoped<ITextFileStorage, TextFileStorage>();
 builder.Services.AddSingleton<StoragePathProvider>();
 builder.Services.AddSingleton<IAuditLogger, AuditLogger>();
 builder.Services.AddSingleton<IImageProcessor, ImageProcessor>();
+builder.Services.AddSingleton<IInputSanitizer, InputSanitizer>();
 
 // API
 builder.Services.AddScoped<CommentResponseMapper>();

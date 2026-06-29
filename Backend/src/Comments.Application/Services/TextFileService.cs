@@ -1,5 +1,4 @@
-﻿
-using Comments.Application.Interfaces.Services;
+﻿using Comments.Application.Interfaces.Services;
 using Comments.Application.Interfaces.Storage;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -18,7 +17,6 @@ namespace Comments.Application.Services
             _logger = logger;
             _storage = storage;
         }
-        
 
         public async Task<(Guid fileId, string originalFileName)> ProcessAndSaveAsync(IFormFile textFile, CancellationToken ct)
         {

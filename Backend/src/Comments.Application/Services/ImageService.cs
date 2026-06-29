@@ -1,4 +1,5 @@
 ﻿using Comments.Application.Constants;
+using Comments.Application.Interfaces.ImageProcessing;
 using Comments.Application.Interfaces.Services;
 using Comments.Application.Interfaces.Storage;
 using Microsoft.AspNetCore.Http;

@@ -1,11 +1,11 @@
-﻿using Comments.Application.Interfaces.Services;
+﻿using Comments.Application.Interfaces.Sanitization;
 using Ganss.Xss;
 using System.Text.RegularExpressions;
 using System.Web;
 
-public class InputSanitizationService : IInputSanitizationService
+public class InputSanitizer : IInputSanitizer
 {
-    private static readonly HtmlSanitizer _commentSanitizer = CreateSanitizer();
+    private readonly HtmlSanitizer _commentSanitizer = CreateSanitizer();
 
     private static HtmlSanitizer CreateSanitizer()
     {

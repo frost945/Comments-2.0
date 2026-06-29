@@ -1,4 +1,4 @@
-﻿namespace Comments.Application.Interfaces.Services
+﻿namespace Comments.Application.Interfaces.ImageProcessing
 {
     public interface IImageProcessor
     {

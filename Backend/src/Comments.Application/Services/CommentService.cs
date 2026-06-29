@@ -11,6 +11,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using Comments.Application.Mappings;
+using Comments.Application.Interfaces.Sanitization;
 
 namespace Comments.Application.Services
 {
@@ -19,6 +20,7 @@ namespace Comments.Application.Services
         private readonly ICommentRepository _commentRepository;
         private readonly IImageService _imageService;
         private readonly ITextFileService _textFileService;
+        private readonly IInputSanitizer _inputSanitizer;
         private readonly ILogger<CommentService> _logger;
         private readonly IDistributedCache _cache;
         private readonly IAuditLogger _auditLogger;
@@ -34,11 +36,12 @@ namespace Comments.Application.Services
         }
 
         public CommentService(ICommentRepository commentRepository, IImageService imageService, ITextFileService textFileService,
-            ILogger<CommentService> logger, IDistributedCache cache, IAuditLogger auditLogger)
+            IInputSanitizer inputSanitizer, ILogger<CommentService> logger, IDistributedCache cache, IAuditLogger auditLogger)
         {
             _commentRepository = commentRepository;
             _imageService = imageService;
             _textFileService = textFileService;
+            _inputSanitizer = inputSanitizer;
             _logger = logger;
             _cache = cache;
             _auditLogger = auditLogger;
@@ -84,12 +87,9 @@ namespace Comments.Application.Services
                 }
             }
 
-            // Sanitize request fields
-            InputSanitizationService service = new InputSanitizationService();
-
-            var cleanText = service.SanitizeComment(request.Text);
-            var cleanUserName = service.SanitizeUsername(request.UserName);
-            var cleanEmail = service.SanitizeEmail(request.Email);
+            var cleanText = _inputSanitizer.SanitizeComment(request.Text);
+            var cleanUserName = _inputSanitizer.SanitizeUsername(request.UserName);
+            var cleanEmail = _inputSanitizer.SanitizeEmail(request.Email);
 
             var comment = new Comment(
                 request.ParentId,

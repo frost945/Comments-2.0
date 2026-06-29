@@ -1,11 +1,11 @@
-﻿using Comments.Application.Interfaces.Services;
-using Comments.Application.Constants;
+﻿using Comments.Application.Constants;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Gif;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.Processing;
+using Comments.Application.Interfaces.ImageProcessing;
 
 
 namespace Comments.Infrastructure.ImageProcessing;
