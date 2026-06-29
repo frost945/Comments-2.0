@@ -1,8 +1,7 @@
-﻿using Comments.Application.Interfaces.FileStorage;
-using Comments.Application.Interfaces.Logging;
+﻿using Comments.Application.Interfaces.Logging;
 using Comments.Application.Interfaces.Repositories;
 using Comments.Application.Interfaces.Services;
-using Comments.Application.Mappers;
+using Comments.Application.Dtos;
 using Comments.Contracts;
 using Comments.Contracts.Enums;
 using Comments.Contracts.Filters;
@@ -11,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
+using Comments.Application.Mappings;
 
 namespace Comments.Application.Services
 {
@@ -21,7 +21,6 @@ namespace Comments.Application.Services
         private readonly ITextFileService _textFileService;
         private readonly ILogger<CommentService> _logger;
         private readonly IDistributedCache _cache;
-        private readonly IImageStorage _imageStorage;
         private readonly IAuditLogger _auditLogger;
 
         private static bool _redisAvailable = true;
@@ -35,14 +34,13 @@ namespace Comments.Application.Services
         }
 
         public CommentService(ICommentRepository commentRepository, IImageService imageService, ITextFileService textFileService,
-            ILogger<CommentService> logger, IDistributedCache cache, IImageStorage imageStorage, IAuditLogger auditLogger)
+            ILogger<CommentService> logger, IDistributedCache cache, IAuditLogger auditLogger)
         {
             _commentRepository = commentRepository;
             _imageService = imageService;
             _textFileService = textFileService;
             _logger = logger;
             _cache = cache;
-            _imageStorage = imageStorage;
             _auditLogger = auditLogger;
         }
 

@@ -1,4 +1,4 @@
-﻿namespace Comments.Application.Interfaces.FileStorage
+﻿namespace Comments.Application.Interfaces.Storage
 {
     public interface IImageStorage
     {

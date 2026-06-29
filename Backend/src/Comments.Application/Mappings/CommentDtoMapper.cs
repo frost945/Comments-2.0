@@ -1,6 +1,8 @@
-﻿using Comments.Domain.Models;
+﻿using Comments.Application.Dtos;
+using Comments.Application.Interfaces.Repositories;
+using Comments.Domain.Models;
 
-namespace Comments.Application.Mappers
+namespace Comments.Application.Mappings
 {
     public static class CommentDtoMapper
     {

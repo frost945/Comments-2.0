@@ -1,4 +1,5 @@
-﻿using Comments.Application.Interfaces.FileStorage;
+﻿using Comments.Application.Constants;
+using Comments.Application.Interfaces.Storage;
 
 namespace Comments.Infrastructure.Storage
 {
@@ -6,7 +7,6 @@ namespace Comments.Infrastructure.Storage
     {
         private readonly string _originalImagesDir;
         private readonly string _previewImagesDir;
-        private readonly string[] _allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
 
         public LocalImageStorage(StoragePathProvider path)
         {
@@ -53,7 +53,7 @@ namespace Comments.Infrastructure.Storage
 
         public string? GetOriginalName(Guid imageId)
         {
-            foreach (var ext in _allowedExtensions)
+            foreach (var ext in ImageConstants.AllowedExtensions)
             {
                 var filePath = Path.Combine(_originalImagesDir, $"{imageId}{ext}");
 

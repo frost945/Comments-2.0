@@ -1,5 +1,4 @@
 ﻿using Comments.Application.Interfaces.Repositories;
-using Comments.Application.Mappers;
 using Comments.Contracts.Enums;
 using Comments.Contracts.Filters;
 using Comments.Domain.Models;

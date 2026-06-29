@@ -1,5 +1,6 @@
-﻿using Comments.Application.Interfaces.FileStorage;
+﻿
 using Comments.Application.Interfaces.Services;
+using Comments.Application.Interfaces.Storage;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 

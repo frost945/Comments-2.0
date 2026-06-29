@@ -1,6 +1,6 @@
 ﻿using Comments.Api.URLs;
-using Comments.Application.Interfaces.FileStorage;
-using Comments.Application.Mappers;
+using Comments.Application.Dtos;
+using Comments.Application.Interfaces.Storage;
 using Comments.Contracts;
 
 namespace Comments.Api.Mappers

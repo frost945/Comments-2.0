@@ -1,6 +1,6 @@
-﻿namespace Comments.Application.Mappers
+﻿namespace Comments.Application.Dtos    
 {
-    public class CommentRawDto
+    public class CommentDto
     {
         public int Id { get; set; }
         public string UserName { get; set; } = string.Empty;
@@ -8,7 +8,7 @@
         public DateTime CreatedAt { get; set; }
         public Guid? ImageId { get; set; }
         public Guid? TextFileId { get; set; }
-        public string? OriginalTextFileName { get; set; }
+        public string? TextFileName { get; set; }
         public int ReplyCount { get; set; }
     }
 }

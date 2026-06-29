@@ -1,4 +1,4 @@
-﻿using Comments.Application.Mappers;
+﻿using Comments.Application.Dtos;
 using Comments.Contracts;
 using Comments.Contracts.Filters;
 using Microsoft.AspNetCore.Http;

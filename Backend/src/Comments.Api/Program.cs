@@ -1,7 +1,7 @@
 using Comments.Api.Mappers;
 using Comments.Api.Middleware;
 using Comments.Api.URLs;
-using Comments.Application.Interfaces.FileStorage;
+using Comments.Application.Interfaces.Storage;
 using Comments.Application.Interfaces.Logging;
 using Comments.Application.Interfaces.Repositories;
 using Comments.Application.Interfaces.Services;
@@ -12,6 +12,7 @@ using Comments.Infrastructure.Persistence.Repositories;
 using Comments.Infrastructure.Storage;
 using Serilog;
 using StackExchange.Redis;
+using Comments.Infrastructure.ImageProcessing;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -83,6 +84,7 @@ builder.Services.AddScoped<ITextFileStorage, TextFileStorage>();
 
 builder.Services.AddSingleton<StoragePathProvider>();
 builder.Services.AddSingleton<IAuditLogger, AuditLogger>();
+builder.Services.AddSingleton<IImageProcessor, ImageProcessor>();
 
 // API
 builder.Services.AddScoped<CommentResponseMapper>();

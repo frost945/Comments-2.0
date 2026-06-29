@@ -1,7 +1,5 @@
-﻿using Comments.Application.Mappers;
-using Comments.Contracts.Filters;
+﻿using Comments.Contracts.Filters;
 using Comments.Domain.Models;
-
 
 namespace Comments.Application.Interfaces.Repositories
 {

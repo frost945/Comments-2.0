@@ -1,5 +1,4 @@
-﻿using Comments.Infrastructure.Persistence;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -26,7 +25,6 @@ namespace Comments.Infrastructure.Persistence.Extensions
                 // db.Database.EnsureCreated();
 
                 await db.Database.MigrateAsync();
-                logger.LogInformation("Database migrations applied successfully.");
             }
             catch (Exception ex)
             {

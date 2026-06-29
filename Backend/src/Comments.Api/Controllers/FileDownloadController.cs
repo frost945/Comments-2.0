@@ -1,4 +1,4 @@
-using Comments.Application.Interfaces.FileStorage;
+using Comments.Application.Interfaces.Storage;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Comments.Api.Controllers
