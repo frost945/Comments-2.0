@@ -1,8 +1,9 @@
 ﻿using Comments.Application.Interfaces.Repositories;
 using Comments.Application.Requests;
-using Comments.Application.Requests.Enums;
+using Comments.Application.Queries.Enums;
 using Comments.Domain.Models;
 using Microsoft.EntityFrameworkCore;
+using Comments.Application.Dtos;
 
 namespace Comments.Infrastructure.Persistence.Repositories
 {
@@ -26,11 +27,11 @@ namespace Comments.Infrastructure.Persistence.Repositories
             return await _dbContext.Comments.AnyAsync(c => c.Id == parentId, ct);
         }
 
-        public async Task<CommentRawDto?> GetByIdAsync(int id, CancellationToken ct)
+        public async Task<CommentDto?> GetByIdAsync(int id, CancellationToken ct)
         {
            return await _dbContext.Comments
                 .Where(c => c.Id == id)
-                .Select(c => new CommentRawDto
+                .Select(c => new CommentDto
                 {
                     Id = c.Id,
                     UserName = c.UserName,
@@ -38,14 +39,14 @@ namespace Comments.Infrastructure.Persistence.Repositories
                     CreatedAt = c.CreatedAt,
                     ImageId = c.ImageId,
                     TextFileId = c.TextFileId,
-                    OriginalTextFileName = c.OriginalTextFileName,
+                    TextFileName = c.OriginalTextFileName,
                     ReplyCount = c.Children.Count
                 })
                 .FirstOrDefaultAsync(ct);
         }
 
         // sorting by UserName, Email
-        public async Task<List<CommentRawDto>> GetListOffsetAsync(CommentQuery commentQuery, CancellationToken ct, int? parentId = null)
+        public async Task<List<CommentDto>> GetListOffsetAsync(CommentQuery commentQuery, CancellationToken ct, int? parentId = null)
         {
             var comments = _dbContext.Comments
                 .AsNoTracking()
@@ -68,10 +69,10 @@ namespace Comments.Infrastructure.Persistence.Repositories
                 _ => comments.OrderBy(c => c.CreatedAt) //как заглушка, т.к. сортировка по несуществующему полю уже проверяется на уровне контроллера
             };
 
-            var rawComments = await comments
+            var commentsDto = await comments
                 .Skip(commentQuery.Skip)
                 .Take(commentQuery.PageSize)
-                .Select(c => new CommentRawDto
+                .Select(c => new CommentDto
                 {
                     Id = c.Id,
                     UserName = c.UserName,
@@ -79,18 +80,18 @@ namespace Comments.Infrastructure.Persistence.Repositories
                     CreatedAt = c.CreatedAt,
                     ImageId = c.ImageId,
                     TextFileId = c.TextFileId,
-                    OriginalTextFileName = c.OriginalTextFileName,
+                    TextFileName = c.OriginalTextFileName,
                     ReplyCount = parentId == null
                     ? c.Children.Count
                     : 0 // count the number of replies only for parent comments
                 })
                 .ToListAsync(ct);
 
-            return rawComments;
+            return commentsDto;
         }
 
         // keyset pagination implementation only for sorting by createdAt field
-        public async Task<List<CommentRawDto>> GetListKeysetAsync(CommentQuery commentQuery, CancellationToken ct, int? parentId = null)
+        public async Task<List<CommentDto>> GetListKeysetAsync(CommentQuery commentQuery, CancellationToken ct, int? parentId = null)
         {
             var comments = _dbContext.Comments
                 .AsNoTracking()
@@ -160,9 +161,9 @@ namespace Comments.Infrastructure.Persistence.Repositories
                     : comments.OrderByDescending(c => c.CreatedAt).ThenByDescending(c => c.Id);
             }
 
-            var rawComments = await comments
+            var commentsDto = await comments
                 .Take(commentQuery.PageSize)
-                .Select(c => new CommentRawDto
+                .Select(c => new CommentDto
                 {
                     Id = c.Id,
                     UserName = c.UserName,
@@ -170,14 +171,14 @@ namespace Comments.Infrastructure.Persistence.Repositories
                     CreatedAt = c.CreatedAt,
                     ImageId = c.ImageId,
                     TextFileId = c.TextFileId,
-                    OriginalTextFileName = c.OriginalTextFileName,
+                    TextFileName = c.OriginalTextFileName,
                     ReplyCount = parentId == null
                     ? c.Children.Count
                     : 0 // count the number of replies only for parent comments
                 })
                 .ToListAsync(ct);
 
-            return rawComments;
+            return commentsDto;
         }
     }   
 }

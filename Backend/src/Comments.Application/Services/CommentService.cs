@@ -8,10 +8,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
-using Comments.Application.Mappings;
+using Comments.Application.Mappers;
 using Comments.Application.Interfaces.Sanitization;
 using Comments.Application.Requests;
-using Comments.Application.Requests.Enums;
+using Comments.Application.Queries.Enums;
 
 namespace Comments.Application.Services
 {
@@ -132,26 +132,19 @@ namespace Comments.Application.Services
                 return await GetCachedCommentsAsync(commentQuery, cancellationToken);
             }
 
-            var rawComments = useKeyset
+            var commentsDto = useKeyset
                 ? await _commentRepository.GetListKeysetAsync(commentQuery, cancellationToken, parentId)
                 : await _commentRepository.GetListOffsetAsync(commentQuery, cancellationToken, parentId);
-
-            var commentsDto = rawComments
-                .Select(CommentDtoMapper.FromRaw)
-                .ToList();
-
 
             return commentsDto;
         }
 
         public async Task<CommentDto> GetCommentById(int id, CancellationToken cancellationToken)
         {
-            var rawComment = await _commentRepository.GetByIdAsync(id, cancellationToken);
+            var commentDto = await _commentRepository.GetByIdAsync(id, cancellationToken);
 
-            if (rawComment == null)
+            if (commentDto == null)
                 throw new KeyNotFoundException($"Comment for id: {id} not found");
-
-            var commentDto = CommentDtoMapper.FromRaw(rawComment);
 
             return commentDto;
         }
@@ -189,11 +182,7 @@ namespace Comments.Application.Services
 
                 _logger.LogInformation("CACHE MISS: {CacheKey} - loading from DB", cacheKey);
 
-                var rawComments = await _commentRepository.GetListKeysetAsync(commentQuery, cancellationToken);
-
-                var commentsDto = rawComments
-                    .Select(CommentDtoMapper.FromRaw)
-                    .ToList();
+                var commentsDto = await _commentRepository.GetListKeysetAsync(commentQuery, cancellationToken);
 
                 try
                 {
@@ -221,13 +210,9 @@ namespace Comments.Application.Services
             _logger.LogInformation("Redis unavailable until {UnavailableUntil}, loading from DB", _redisDisabledUntil);
 
             // fallback to DB, if Redis is unavailable 
-            var fallbackRawComments = await _commentRepository.GetListKeysetAsync(commentQuery, cancellationToken);
+            var fallbackCommentsDto = await _commentRepository.GetListKeysetAsync(commentQuery, cancellationToken);
 
-            var fallbackcommentsResponse = fallbackRawComments
-                .Select(CommentDtoMapper.FromRaw)
-                .ToList();
-
-            return fallbackcommentsResponse;
+            return fallbackCommentsDto;
         }
 
         private FileType DetectFile(IFormFile file)

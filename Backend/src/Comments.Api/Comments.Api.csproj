@@ -15,7 +15,6 @@
 
 
     <ItemGroup>
-	    <ProjectReference Include="..\Comments.Domain\Comments.Domain.csproj" />
 	    <ProjectReference Include="..\Comments.Infrastructure\Comments.Infrastructure.csproj" />
 	    <ProjectReference Include="..\Comments.Application\Comments.Application.csproj" />
 	    <ProjectReference Include="..\Comments.Contracts\Comments.Contracts.csproj" />

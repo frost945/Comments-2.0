@@ -9,6 +9,6 @@
         public Guid? ImageId { get; set; }
         public Guid? TextFileId { get; set; }
         public string? TextFileName { get; set; }
-        public int ReplyCount { get; set; }
+        public int ReplyCount { get; set; } = 0;
     }
 }

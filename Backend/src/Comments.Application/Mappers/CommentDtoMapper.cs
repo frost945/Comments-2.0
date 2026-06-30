@@ -1,8 +1,7 @@
 ﻿using Comments.Application.Dtos;
-using Comments.Application.Interfaces.Repositories;
 using Comments.Domain.Models;
 
-namespace Comments.Application.Mappings
+namespace Comments.Application.Mappers
 {
     public static class CommentDtoMapper
     {
@@ -18,21 +17,6 @@ namespace Comments.Application.Mappings
                 TextFileId = comment.TextFileId,
                 TextFileName = comment.OriginalTextFileName,
                 ReplyCount = replyCount
-            };
-        }
-
-        public static CommentDto FromRaw(CommentRawDto c)
-        {
-            return new CommentDto
-            {
-                Id = c.Id,
-                UserName = c.UserName,
-                Text = c.Text,
-                CreatedAt = c.CreatedAt,
-                ImageId = c.ImageId,
-                TextFileId = c.TextFileId,
-                TextFileName = c.OriginalTextFileName,
-                ReplyCount = c.ReplyCount
             };
         }
     }

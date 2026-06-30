@@ -28,10 +28,10 @@ namespace Comments.Api.Controllers
             }
 
             var commentDto = await _commentService.CreateCommentAsync(commentRequest, cancellationToken, commentRequest.File);
-            var comment = _mapper.CreateCommentResponse(commentDto);
+            var commentResponse = _mapper.CreateCommentResponse(commentDto);
 
             // Return 201 Created with location header pointing to the new comment
-            return CreatedAtAction(nameof(GetCommentById), new { id = comment.Id }, comment);
+            return CreatedAtAction(nameof(GetCommentById), new { id = commentResponse.Id }, commentResponse);
         }
 
         // GET root (parent) comments

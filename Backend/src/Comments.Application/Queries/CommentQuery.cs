@@ -1,4 +1,4 @@
-﻿using Comments.Application.Requests.Enums;
+﻿using Comments.Application.Queries.Enums;
 
 namespace Comments.Application.Requests
 {
