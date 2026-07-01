@@ -1,20 +1,13 @@
-using Comments.Api.Mappers;
+using Comments.Application;
+using Comments.Infrastructure;
+using Comments.Api;
 using Comments.Api.Middleware;
-using Comments.Api.URLs;
-using Comments.Application.Interfaces.Storage;
-using Comments.Application.Interfaces.Logging;
-using Comments.Application.Interfaces.Repositories;
-using Comments.Application.Interfaces.Services;
-using Comments.Application.Services;
 using Comments.Infrastructure.Logging;
 using Comments.Infrastructure.Persistence.Extensions;
-using Comments.Infrastructure.Persistence.Repositories;
 using Comments.Infrastructure.Storage;
-using Serilog;
 using StackExchange.Redis;
-using Comments.Infrastructure.ImageProcessing;
-using Comments.Application.Interfaces.ImageProcessing;
-using Comments.Application.Interfaces.Sanitization;
+using Serilog;
+
 
 var builder = WebApplication.CreateBuilder();
 
@@ -74,24 +67,11 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.InstanceName = "CommentsApp:";
 });
 
-// Application
-builder.Services.AddScoped<ICommentService, CommentService>();
-builder.Services.AddScoped<IImageService, ImageService>();
-builder.Services.AddScoped<ITextFileService, TextFileService>();
+builder.Services.AddApplication();
 
-// Infrastructure
-builder.Services.AddScoped<ICommentRepository, CommentRepository>();
-builder.Services.AddScoped<IImageStorage, LocalImageStorage>();
-builder.Services.AddScoped<ITextFileStorage, TextFileStorage>();
+builder.Services.AddInfrastructure();
 
-builder.Services.AddSingleton<StoragePathProvider>();
-builder.Services.AddSingleton<IAuditLogger, AuditLogger>();
-builder.Services.AddSingleton<IImageProcessor, ImageProcessor>();
-builder.Services.AddSingleton<IInputSanitizer, InputSanitizer>();
-
-// API
-builder.Services.AddScoped<CommentResponseMapper>();
-builder.Services.AddSingleton<ImageUrlBuilder>();
+builder.Services.AddApi();
 
 var app = builder.Build();
 

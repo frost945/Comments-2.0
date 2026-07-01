@@ -3,80 +3,83 @@ using Ganss.Xss;
 using System.Text.RegularExpressions;
 using System.Web;
 
-public class InputSanitizer : IInputSanitizer
+namespace Comments.Infrastructure.Sanitization
 {
-    private readonly HtmlSanitizer _commentSanitizer = CreateSanitizer();
-
-    private static HtmlSanitizer CreateSanitizer()
+    public class InputSanitizer : IInputSanitizer
     {
-        var sanitizer = new HtmlSanitizer();
-        sanitizer.AllowedTags.Clear();
-        sanitizer.AllowedTags.Add("a");
-        sanitizer.AllowedTags.Add("strong");
-        sanitizer.AllowedTags.Add("i");
-        sanitizer.AllowedTags.Add("code");
-        sanitizer.AllowedAttributes.Clear();
-        sanitizer.AllowedAttributes.Add("href");
-        sanitizer.AllowedAttributes.Add("title");
-        sanitizer.AllowedSchemes.Add("http");
-        sanitizer.AllowedSchemes.Add("https");
-        return sanitizer;
-    }
+        private readonly HtmlSanitizer _commentSanitizer = CreateSanitizer();
 
-    public string SanitizeComment(string input)
-    {
-        if (string.IsNullOrWhiteSpace(input))
-            return string.Empty;
+        private static HtmlSanitizer CreateSanitizer()
+        {
+            var sanitizer = new HtmlSanitizer();
+            sanitizer.AllowedTags.Clear();
+            sanitizer.AllowedTags.Add("a");
+            sanitizer.AllowedTags.Add("strong");
+            sanitizer.AllowedTags.Add("i");
+            sanitizer.AllowedTags.Add("code");
+            sanitizer.AllowedAttributes.Clear();
+            sanitizer.AllowedAttributes.Add("href");
+            sanitizer.AllowedAttributes.Add("title");
+            sanitizer.AllowedSchemes.Add("http");
+            sanitizer.AllowedSchemes.Add("https");
+            return sanitizer;
+        }
 
-        input = HttpUtility.HtmlDecode(input);
+        public string SanitizeComment(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return string.Empty;
 
-        string sanitized = _commentSanitizer.Sanitize(input);
+            input = HttpUtility.HtmlDecode(input);
 
-        sanitized = sanitized.Trim();
+            string sanitized = _commentSanitizer.Sanitize(input);
 
-        return sanitized;
-    }
+            sanitized = sanitized.Trim();
 
-    public string SanitizeUsername(string input)
-    {
-        if (string.IsNullOrWhiteSpace(input))
-            return string.Empty;
+            return sanitized;
+        }
 
-        input = HttpUtility.HtmlDecode(input);
+        public string SanitizeUsername(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return string.Empty;
 
-        // Remove all Html tags
-        input = Regex.Replace(input, "<.*?>", "");
+            input = HttpUtility.HtmlDecode(input);
 
-        // Disable Unicode controls (invisible, null, etc.)
-        input = RemoveControlCharacters(input);
+            // Remove all Html tags
+            input = Regex.Replace(input, "<.*?>", "");
 
-        // We only allow letters, numbers, and ., _, -
-        input = Regex.Replace(input, @"[^a-zA-Z0-9а-яА-ЯёЁ_\-.]", "");
+            // Disable Unicode controls (invisible, null, etc.)
+            input = RemoveControlCharacters(input);
 
-        return input;
-    }
+            // We only allow letters, numbers, and ., _, -
+            input = Regex.Replace(input, @"[^a-zA-Z0-9а-яА-ЯёЁ_\-.]", "");
 
-    public string SanitizeEmail(string input)
-    {
-        if (string.IsNullOrWhiteSpace(input))
-            return string.Empty;
+            return input;
+        }
 
-        input = HttpUtility.HtmlDecode(input);
+        public string SanitizeEmail(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return string.Empty;
 
-        // Remove all Html tags
-        input = Regex.Replace(input, "<.*?>", "");
+            input = HttpUtility.HtmlDecode(input);
 
-        // Disable Unicode controls (invisible, null, etc.)
-        input = RemoveControlCharacters(input);
+            // Remove all Html tags
+            input = Regex.Replace(input, "<.*?>", "");
 
-        input = input.Trim();
-        input = input.ToLowerInvariant();
+            // Disable Unicode controls (invisible, null, etc.)
+            input = RemoveControlCharacters(input);
 
-        return input;        
-    }
+            input = input.Trim();
+            input = input.ToLowerInvariant();
 
-    private static string RemoveControlCharacters(string input)
-    {
-        return new string(input.Where(c => !char.IsControl(c)).ToArray());
+            return input;
+        }
+
+        private static string RemoveControlCharacters(string input)
+        {
+            return new string(input.Where(c => !char.IsControl(c)).ToArray());
+        }
     }
 }
