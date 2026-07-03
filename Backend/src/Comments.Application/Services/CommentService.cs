@@ -1,17 +1,16 @@
-﻿using Comments.Application.Interfaces.Logging;
+﻿using Comments.Domain.Models;
+using Comments.Application.Interfaces.Logging;
 using Comments.Application.Interfaces.Repositories;
 using Comments.Application.Interfaces.Services;
 using Comments.Application.Dtos;
-using Comments.Contracts;
-using Comments.Domain.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Logging;
-using System.Text.Json;
 using Comments.Application.Mappers;
 using Comments.Application.Interfaces.Sanitization;
 using Comments.Application.Requests;
 using Comments.Application.Queries.Enums;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace Comments.Application.Services
 {
@@ -47,7 +46,7 @@ namespace Comments.Application.Services
             _auditLogger = auditLogger;
         }
 
-        public async Task<CommentDto> CreateCommentAsync(CommentRequest request, CancellationToken cancellationToken, IFormFile? file = null)
+        public async Task<CommentDto> CreateCommentAsync(CreateCommentRequest request, CancellationToken cancellationToken, IFormFile? file = null)
         {
             if (request.ParentId.HasValue)
             {

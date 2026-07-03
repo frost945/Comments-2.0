@@ -1,9 +1,9 @@
-﻿using Comments.Application.Interfaces.Repositories;
+﻿using Comments.Domain.Models;
+using Comments.Application.Interfaces.Repositories;
 using Comments.Application.Requests;
 using Comments.Application.Queries.Enums;
-using Comments.Domain.Models;
-using Microsoft.EntityFrameworkCore;
 using Comments.Application.Dtos;
+using Microsoft.EntityFrameworkCore;
 
 namespace Comments.Infrastructure.Persistence.Repositories
 {

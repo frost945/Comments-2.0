@@ -1,10 +1,10 @@
 using Comments.Application;
 using Comments.Infrastructure;
-using Comments.Api;
-using Comments.Api.Middleware;
 using Comments.Infrastructure.Logging;
 using Comments.Infrastructure.Persistence.Extensions;
 using Comments.Infrastructure.Storage;
+using Comments.Api.Middleware;
+using Comments.Api;
 using StackExchange.Redis;
 using Serilog;
 

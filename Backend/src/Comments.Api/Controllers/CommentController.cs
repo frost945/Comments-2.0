@@ -1,7 +1,7 @@
-﻿using Comments.Api.Mappers;
-using Comments.Application.Interfaces.Services;
+﻿using Comments.Application.Interfaces.Services;
 using Comments.Application.Requests;
-using Comments.Contracts;
+using Comments.Api.Mappers;
+using Comments.Api.Contracts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Comments.Api.Controllers
@@ -11,11 +11,11 @@ namespace Comments.Api.Controllers
     public class CommentController : ControllerBase
     {
         private readonly ICommentService _commentService;
-        private readonly CommentResponseMapper _mapper;
-        public CommentController(ICommentService commentService, CommentResponseMapper mapper)
+        private readonly CommentResponseMapper _responseMapper;
+        public CommentController(ICommentService commentService, CommentResponseMapper responseMapper)
         {
             _commentService = commentService;
-            _mapper = mapper;
+            _responseMapper = responseMapper;
         }
 
         // CREATE comment
@@ -26,9 +26,11 @@ namespace Comments.Api.Controllers
             {
                 return BadRequest(ModelState);
             }
+            var createCommentRequest = CommentRequestMapper.ToRequest(commentRequest);
 
-            var commentDto = await _commentService.CreateCommentAsync(commentRequest, cancellationToken, commentRequest.File);
-            var commentResponse = _mapper.CreateCommentResponse(commentDto);
+            var commentDto = await _commentService.CreateCommentAsync(createCommentRequest, cancellationToken, createCommentRequest.File);
+
+            var commentResponse = _responseMapper.CreateCommentResponse(commentDto);
 
             // Return 201 Created with location header pointing to the new comment
             return CreatedAtAction(nameof(GetCommentById), new { id = commentResponse.Id }, commentResponse);
@@ -41,7 +43,7 @@ namespace Comments.Api.Controllers
         {
             var parentCommentsDto = await _commentService.GetCommentsAsync(query, cancellationToken);
 
-            var parentComments  = parentCommentsDto.Select(_mapper.CreateCommentResponse).ToList();
+            var parentComments  = parentCommentsDto.Select(_responseMapper.CreateCommentResponse).ToList();
 
             return Ok(parentComments);
         }
@@ -59,7 +61,7 @@ namespace Comments.Api.Controllers
 
             var repliesDto = await _commentService.GetCommentsAsync(query, cancellationToken, parentId: id);
 
-            var replies = repliesDto.Select(_mapper.CreateCommentResponse).ToList();
+            var replies = repliesDto.Select(_responseMapper.CreateCommentResponse).ToList();
 
             return Ok(replies);
         }
@@ -71,7 +73,7 @@ namespace Comments.Api.Controllers
         {
             var commentDto = await _commentService.GetCommentById(id, cancellationToken);
 
-            var comment = _mapper.CreateCommentResponse(commentDto);
+            var comment = _responseMapper.CreateCommentResponse(commentDto);
 
             return Ok(comment);
         }

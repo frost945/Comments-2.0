@@ -1,5 +1,4 @@
 ﻿using Comments.Api.Mappers;
-using Comments.Api.URLs;
 
 namespace Comments.Api
 {
@@ -8,7 +7,6 @@ namespace Comments.Api
         public static IServiceCollection AddApi(this IServiceCollection services)
         {
             services.AddScoped<CommentResponseMapper>();
-            services.AddSingleton<ImageUrlBuilder>();
 
             return services;
         }

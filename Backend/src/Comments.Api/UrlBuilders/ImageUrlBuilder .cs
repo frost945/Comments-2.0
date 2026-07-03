@@ -1,15 +1,15 @@
-﻿namespace Comments.Api.URLs
+﻿namespace Comments.Api.UrlBuilders
 {
-    public class ImageUrlBuilder
+    public static class ImageUrlBuilder
     {
-        public string? GetOriginalUrl(string? fileName)
+        public static string? GetOriginalUrl(string? fileName)
         {
             return fileName == null
                 ? null
                 : $"/uploads/images/original/{fileName}";
         }
 
-        public string? GetPreviewUrl(string? fileName)
+        public static string? GetPreviewUrl(string? fileName)
         {
             return fileName == null
                 ? null
