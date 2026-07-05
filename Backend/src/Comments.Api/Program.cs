@@ -3,11 +3,9 @@ using Comments.Infrastructure;
 using Comments.Infrastructure.Logging;
 using Comments.Infrastructure.Persistence.Extensions;
 using Comments.Infrastructure.Storage;
+using Comments.Api.Mappers;
 using Comments.Api.Middleware;
-using Comments.Api;
-using StackExchange.Redis;
 using Serilog;
-
 
 var builder = WebApplication.CreateBuilder();
 
@@ -15,9 +13,6 @@ builder.ConfigureSerilog();
 builder.Host.UseSerilog();
 
 builder.Services.AddCommentsDbContext(builder.Configuration);
-
-builder.Services.Configure<StorageOptions>(
-    builder.Configuration.GetSection("Storage"));
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -53,25 +48,9 @@ builder.Services.AddHsts(options =>
     options.MaxAge = TimeSpan.FromDays(365);
 });
 
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-    options.ConfigurationOptions = new ConfigurationOptions
-    {
-        EndPoints = { "localhost:6379" },
-        AbortOnConnectFail = false,
-        ConnectRetry = 0,
-        ConnectTimeout = 200,
-        SyncTimeout = 200,
-        AsyncTimeout = 200
-    };
-    options.InstanceName = "CommentsApp:";
-});
-
 builder.Services.AddApplication();
-
-builder.Services.AddInfrastructure();
-
-builder.Services.AddApi();
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddScoped<CommentResponseMapper>();
 
 var app = builder.Build();
 

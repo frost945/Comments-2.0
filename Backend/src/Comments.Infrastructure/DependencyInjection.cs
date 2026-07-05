@@ -8,15 +8,32 @@ using Comments.Infrastructure.Persistence.Repositories;
 using Comments.Infrastructure.Storage;
 using Comments.Infrastructure.ImageProcessing;
 using Comments.Infrastructure.Sanitization;
-
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using StackExchange.Redis;
 
 namespace Comments.Infrastructure
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddInfrastructure(this IServiceCollection services)
+        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config)
         {
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.ConfigurationOptions = new ConfigurationOptions
+                {
+                    EndPoints = { "localhost:6379" },
+                    AbortOnConnectFail = false,
+                    ConnectRetry = 0,
+                    ConnectTimeout = 200,
+                    SyncTimeout = 200,
+                    AsyncTimeout = 200
+                };
+                options.InstanceName = "CommentsApp:";
+            });
+
+            services.Configure<StorageOptions>(config.GetSection("Storage"));
+
             services.AddScoped<ICommentRepository, CommentRepository>();
             services.AddScoped<IImageStorage, LocalImageStorage>();
             services.AddScoped<ITextFileStorage, TextFileStorage>();
