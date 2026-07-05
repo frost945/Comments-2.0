@@ -183,7 +183,9 @@ namespace Comments.Infrastructure.Persistence.Repositories
 
         public async Task<bool> DeleteByIdAsync(int id, CancellationToken ct)
         {
+            Console.WriteLine($"Attempting to delete comment with ID: {id}");
             var isParent = await _dbContext.Comments.AnyAsync(c => c.Id == id && c.ParentId == null, ct);
+            // если комментарий не найден, то вернется false и выполнится блок else
 
             if (isParent)
             {   //cascade delete all replies of the parent comment
