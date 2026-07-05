@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+	<ItemGroup>
+
+	</ItemGroup>
+	
+  <ItemGroup>
+    <ProjectReference Include="..\Comments.Api\Comments.Api.csproj" />
+    <ProjectReference Include="..\Comments.Application\Comments.Application.csproj" />
+    <ProjectReference Include="..\Comments.Domain\Comments.Domain.csproj" />
+    <ProjectReference Include="..\Comments.Infrastructure\Comments.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Comments.Infrastructure", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Comments.Application", "src\Comments.Application\Comments.Application.csproj", "{6F6F6566-89C4-4250-B897-55E2B7453FDF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Comments.ApiAdmin", "src\Comments.ApiAdmin\Comments.ApiAdmin.csproj", "{C8420749-77AC-4EC9-BEEE-3FBD4FAE5616}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{6F6F6566-89C4-4250-B897-55E2B7453FDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6F6F6566-89C4-4250-B897-55E2B7453FDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F6F6566-89C4-4250-B897-55E2B7453FDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8420749-77AC-4EC9-BEEE-3FBD4FAE5616}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8420749-77AC-4EC9-BEEE-3FBD4FAE5616}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8420749-77AC-4EC9-BEEE-3FBD4FAE5616}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8420749-77AC-4EC9-BEEE-3FBD4FAE5616}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
