@@ -12,7 +12,9 @@ namespace Comments.Infrastructure.Storage
 
         public StoragePathProvider(IOptions<StorageOptions> options, IWebHostEnvironment env) 
         {
-            var configuredPath = options.Value.UploadsRoot;
+            var configuredPath = options.Value.UploadsRoot
+                ?? throw new InvalidOperationException(
+                    "UploadsRoot is not configured.");
 
             UploadsRoot = Path.IsPathRooted(configuredPath)
                 ? configuredPath

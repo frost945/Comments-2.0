@@ -214,6 +214,12 @@ namespace Comments.Application.Services
             return fallbackCommentsDto;
         }
 
+        public async Task<bool> DeleteByIdAsync(int id, CancellationToken cancellationToken)
+        {
+            return await _commentRepository.DeleteByIdAsync(id, cancellationToken);
+        }
+
+
         private FileType DetectFile(IFormFile file)
         {
             var type = file.ContentType;

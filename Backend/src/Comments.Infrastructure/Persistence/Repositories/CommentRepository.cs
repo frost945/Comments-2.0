@@ -180,5 +180,26 @@ namespace Comments.Infrastructure.Persistence.Repositories
 
             return commentsDto;
         }
+
+        public async Task<bool> DeleteByIdAsync(int id, CancellationToken ct)
+        {
+            var isParent = await _dbContext.Comments.AnyAsync(c => c.Id == id && c.ParentId == null, ct);
+
+            if (isParent)
+            {   //cascade delete all replies of the parent comment
+                await _dbContext.Comments.Where(c => c.ParentId == id)
+                .ExecuteDeleteAsync(ct);
+
+                return await _dbContext.Comments
+                    .Where(c => c.Id == id)
+                    .ExecuteDeleteAsync(ct) > 0;
+            }
+            else
+            {   //delete only the reply
+                return await _dbContext.Comments
+                .Where(c => c.Id == id && c.ParentId != null)
+                .ExecuteDeleteAsync(ct) > 0;
+            }
+        }
     }   
 }
