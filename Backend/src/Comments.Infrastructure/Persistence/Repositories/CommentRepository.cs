@@ -22,9 +22,9 @@ namespace Comments.Infrastructure.Persistence.Repositories
             await _dbContext.SaveChangesAsync(ct);
         }
 
-        public async Task<bool> ParentExistsAsync(int parentId, CancellationToken ct)
+        public async Task<bool> ParentExistsAsync(int id, CancellationToken ct)
         {
-            return await _dbContext.Comments.AnyAsync(c => c.Id == parentId, ct);
+            return await _dbContext.Comments.AnyAsync(c => c.Id == id && c.ParentId == null, ct);
         }
 
         public async Task<CommentDto?> GetByIdAsync(int id, CancellationToken ct)
